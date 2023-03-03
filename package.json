@@ -20,7 +20,7 @@
     "url": "https://github.com/holepunchto/pearjs-os.git"
   },
   "author": "Holepunch",
-  "license": "MIT",
+  "license": "Apache-2.0",
   "bugs": {
     "url": "https://github.com/holepunchto/pearjs-os/issues"
   },
