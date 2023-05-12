@@ -1,9 +1,9 @@
+#include <bare.h>
 #include <js.h>
-#include <pear.h>
 #include <uv.h>
 
 static js_value_t *
-pear_os_tmpdir (js_env_t *env, js_callback_info_t *info) {
+bare_os_tmpdir (js_env_t *env, js_callback_info_t *info) {
   int err;
 
   size_t len = PATH_MAX;
@@ -23,7 +23,7 @@ pear_os_tmpdir (js_env_t *env, js_callback_info_t *info) {
 }
 
 static js_value_t *
-pear_os_homedir (js_env_t *env, js_callback_info_t *info) {
+bare_os_homedir (js_env_t *env, js_callback_info_t *info) {
   int err;
 
   size_t len = PATH_MAX;
@@ -46,17 +46,17 @@ static js_value_t *
 init (js_env_t *env, js_value_t *exports) {
   {
     js_value_t *fn;
-    js_create_function(env, "tmpdir", -1, pear_os_tmpdir, NULL, &fn);
+    js_create_function(env, "tmpdir", -1, bare_os_tmpdir, NULL, &fn);
     js_set_named_property(env, exports, "tmpdir", fn);
   }
 
   {
     js_value_t *fn;
-    js_create_function(env, "homedir", -1, pear_os_homedir, NULL, &fn);
+    js_create_function(env, "homedir", -1, bare_os_homedir, NULL, &fn);
     js_set_named_property(env, exports, "homedir", fn);
   }
 
   return exports;
 }
 
-PEAR_MODULE(pear_os, init)
+BARE_MODULE(bare_os, init)

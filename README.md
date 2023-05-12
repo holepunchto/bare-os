@@ -1,9 +1,9 @@
-# @pearjs/os
+# bare-os
 
 Operating system utilities for Javascript.
 
 ```
-npm i @pearjs/os
+npm i bare-os
 ```
 
 ## License
