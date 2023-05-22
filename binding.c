@@ -1,5 +1,6 @@
 #include <bare.h>
 #include <js.h>
+#include <utf.h>
 #include <uv.h>
 
 static js_value_t *
@@ -16,7 +17,7 @@ bare_os_tmpdir (js_env_t *env, js_callback_info_t *info) {
   }
 
   js_value_t *result;
-  err = js_create_string_utf8(env, tmpdir, len, &result);
+  err = js_create_string_utf8(env, (utf8_t *) tmpdir, len, &result);
   if (err < 0) return NULL;
 
   return result;
@@ -36,7 +37,7 @@ bare_os_homedir (js_env_t *env, js_callback_info_t *info) {
   }
 
   js_value_t *result;
-  err = js_create_string_utf8(env, homedir, len, &result);
+  err = js_create_string_utf8(env, (utf8_t *) homedir, len, &result);
   if (err < 0) return NULL;
 
   return result;
