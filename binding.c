@@ -5,6 +5,26 @@
 #include <uv.h>
 
 static js_value_t *
+bare_os_exec_path (js_env_t *env, js_callback_info_t *info) {
+  int err;
+
+  size_t len = 4096;
+  char exec_path[4096];
+
+  err = uv_exepath(exec_path, &len);
+  if (err < 0) {
+    js_throw_error(env, uv_err_name(err), uv_strerror(err));
+    return NULL;
+  }
+
+  js_value_t *result;
+  err = js_create_string_utf8(env, (utf8_t *) exec_path, len, &result);
+  if (err < 0) return NULL;
+
+  return result;
+}
+
+static js_value_t *
 bare_os_pid (js_env_t *env, js_callback_info_t *info) {
   int err;
 
@@ -119,6 +139,7 @@ init (js_env_t *env, js_value_t *exports) {
     js_create_function(env, name, -1, fn, NULL, &val); \
     js_set_named_property(env, exports, name, val); \
   }
+  V("execPath", bare_os_exec_path);
   V("pid", bare_os_pid);
   V("ppid", bare_os_ppid);
   V("cwd", bare_os_cwd);

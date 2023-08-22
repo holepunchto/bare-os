@@ -10,6 +10,10 @@ exports.arch = function arch () {
   return process.arch
 }
 
+exports.execPath = function pid () {
+  return binding.execPath()
+}
+
 exports.pid = function pid () {
   return binding.pid()
 }

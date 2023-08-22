@@ -9,6 +9,10 @@ test('arch', (t) => {
   t.comment(os.arch())
 })
 
+test('execPath', (t) => {
+  t.comment(os.execPath())
+})
+
 test('pid', (t) => {
   t.comment(os.pid())
 })
