@@ -182,12 +182,19 @@ init (js_env_t *env, js_value_t *exports) {
   V("kill", bare_os_kill);
 #undef V
 
+  js_value_t *signals;
+  err = js_create_object(env, &signals);
+  assert(err == 0);
+
+  err = js_set_named_property(env, exports, "signals", signals);
+  assert(err == 0);
+
 #define V(name) \
   { \
     js_value_t *val; \
     err = js_create_uint32(env, name, &val); \
     assert(err == 0); \
-    err = js_set_named_property(env, exports, #name, val); \
+    err = js_set_named_property(env, signals, #name, val); \
     assert(err == 0); \
   }
 #ifdef SIGHUP
@@ -335,6 +342,24 @@ init (js_env_t *env, js_value_t *exports) {
 #ifdef SIGUNUSED
   V(SIGUNUSED);
 #endif
+#undef V
+
+  js_value_t *errnos;
+  err = js_create_object(env, &errnos);
+  assert(err == 0);
+
+  err = js_set_named_property(env, exports, "errnos", errnos);
+  assert(err == 0);
+
+#define V(name, msg) \
+  { \
+    js_value_t *val; \
+    err = js_create_int32(env, UV_##name, &val); \
+    assert(err == 0); \
+    err = js_set_named_property(env, errnos, #name, val); \
+    assert(err == 0); \
+  }
+  UV_ERRNO_MAP(V);
 #undef V
 
   return exports;
