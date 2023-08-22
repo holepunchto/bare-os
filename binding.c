@@ -5,6 +5,28 @@
 #include <uv.h>
 
 static js_value_t *
+bare_os_pid (js_env_t *env, js_callback_info_t *info) {
+  int err;
+
+  js_value_t *result;
+  err = js_create_uint32(env, uv_os_getpid(), &result);
+  if (err < 0) return NULL;
+
+  return result;
+}
+
+static js_value_t *
+bare_os_ppid (js_env_t *env, js_callback_info_t *info) {
+  int err;
+
+  js_value_t *result;
+  err = js_create_uint32(env, uv_os_getppid(), &result);
+  if (err < 0) return NULL;
+
+  return result;
+}
+
+static js_value_t *
 bare_os_cwd (js_env_t *env, js_callback_info_t *info) {
   int err;
 
@@ -91,26 +113,19 @@ bare_os_homedir (js_env_t *env, js_callback_info_t *info) {
 
 static js_value_t *
 init (js_env_t *env, js_value_t *exports) {
-  {
-    js_value_t *fn;
-    js_create_function(env, "cwd", -1, bare_os_cwd, NULL, &fn);
-    js_set_named_property(env, exports, "cwd", fn);
+#define V(name, fn) \
+  { \
+    js_value_t *val; \
+    js_create_function(env, name, -1, fn, NULL, &val); \
+    js_set_named_property(env, exports, name, val); \
   }
-  {
-    js_value_t *fn;
-    js_create_function(env, "chdir", -1, bare_os_chdir, NULL, &fn);
-    js_set_named_property(env, exports, "chdir", fn);
-  }
-  {
-    js_value_t *fn;
-    js_create_function(env, "tmpdir", -1, bare_os_tmpdir, NULL, &fn);
-    js_set_named_property(env, exports, "tmpdir", fn);
-  }
-  {
-    js_value_t *fn;
-    js_create_function(env, "homedir", -1, bare_os_homedir, NULL, &fn);
-    js_set_named_property(env, exports, "homedir", fn);
-  }
+  V("pid", bare_os_pid);
+  V("ppid", bare_os_ppid);
+  V("cwd", bare_os_cwd);
+  V("chdir", bare_os_chdir);
+  V("tmpdir", bare_os_tmpdir);
+  V("homedir", bare_os_homedir);
+#undef V
 
   return exports;
 }
