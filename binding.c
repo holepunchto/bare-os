@@ -132,12 +132,45 @@ bare_os_homedir (js_env_t *env, js_callback_info_t *info) {
 }
 
 static js_value_t *
+bare_os_kill (js_env_t *env, js_callback_info_t *info) {
+  int err;
+
+  size_t argc = 2;
+  js_value_t *argv[2];
+
+  err = js_get_callback_info(env, info, &argc, argv, NULL, NULL);
+  assert(err == 0);
+
+  assert(argc == 2);
+
+  uint32_t pid;
+  err = js_get_value_uint32(env, argv[0], &pid);
+  assert(err == 0);
+
+  uint32_t signum;
+  err = js_get_value_uint32(env, argv[1], &signum);
+  assert(err == 0);
+
+  err = uv_kill(pid, signum);
+  if (err < 0) {
+    js_throw_error(env, uv_err_name(err), uv_strerror(err));
+    return NULL;
+  }
+
+  return NULL;
+}
+
+static js_value_t *
 init (js_env_t *env, js_value_t *exports) {
+  int err;
+
 #define V(name, fn) \
   { \
     js_value_t *val; \
-    js_create_function(env, name, -1, fn, NULL, &val); \
-    js_set_named_property(env, exports, name, val); \
+    err = js_create_function(env, name, -1, fn, NULL, &val); \
+    assert(err == 0); \
+    err = js_set_named_property(env, exports, name, val); \
+    assert(err == 0); \
   }
   V("execPath", bare_os_exec_path);
   V("pid", bare_os_pid);
@@ -146,6 +179,162 @@ init (js_env_t *env, js_value_t *exports) {
   V("chdir", bare_os_chdir);
   V("tmpdir", bare_os_tmpdir);
   V("homedir", bare_os_homedir);
+  V("kill", bare_os_kill);
+#undef V
+
+#define V(name) \
+  { \
+    js_value_t *val; \
+    err = js_create_uint32(env, name, &val); \
+    assert(err == 0); \
+    err = js_set_named_property(env, exports, #name, val); \
+    assert(err == 0); \
+  }
+#ifdef SIGHUP
+  V(SIGHUP);
+#endif
+
+#ifdef SIGINT
+  V(SIGINT);
+#endif
+
+#ifdef SIGQUIT
+  V(SIGQUIT);
+#endif
+
+#ifdef SIGILL
+  V(SIGILL);
+#endif
+
+#ifdef SIGTRAP
+  V(SIGTRAP);
+#endif
+
+#ifdef SIGABRT
+  V(SIGABRT);
+#endif
+
+#ifdef SIGIOT
+  V(SIGIOT);
+#endif
+
+#ifdef SIGBUS
+  V(SIGBUS);
+#endif
+
+#ifdef SIGFPE
+  V(SIGFPE);
+#endif
+
+#ifdef SIGKILL
+  V(SIGKILL);
+#endif
+
+#ifdef SIGUSR1
+  V(SIGUSR1);
+#endif
+
+#ifdef SIGSEGV
+  V(SIGSEGV);
+#endif
+
+#ifdef SIGUSR2
+  V(SIGUSR2);
+#endif
+
+#ifdef SIGPIPE
+  V(SIGPIPE);
+#endif
+
+#ifdef SIGALRM
+  V(SIGALRM);
+#endif
+
+  V(SIGTERM);
+
+#ifdef SIGCHLD
+  V(SIGCHLD);
+#endif
+
+#ifdef SIGSTKFLT
+  V(SIGSTKFLT);
+#endif
+
+#ifdef SIGCONT
+  V(SIGCONT);
+#endif
+
+#ifdef SIGSTOP
+  V(SIGSTOP);
+#endif
+
+#ifdef SIGTSTP
+  V(SIGTSTP);
+#endif
+
+#ifdef SIGBREAK
+  V(SIGBREAK);
+#endif
+
+#ifdef SIGTTIN
+  V(SIGTTIN);
+#endif
+
+#ifdef SIGTTOU
+  V(SIGTTOU);
+#endif
+
+#ifdef SIGURG
+  V(SIGURG);
+#endif
+
+#ifdef SIGXCPU
+  V(SIGXCPU);
+#endif
+
+#ifdef SIGXFSZ
+  V(SIGXFSZ);
+#endif
+
+#ifdef SIGVTALRM
+  V(SIGVTALRM);
+#endif
+
+#ifdef SIGPROF
+  V(SIGPROF);
+#endif
+
+#ifdef SIGWINCH
+  V(SIGWINCH);
+#endif
+
+#ifdef SIGIO
+  V(SIGIO);
+#endif
+
+#ifdef SIGPOLL
+  V(SIGPOLL);
+#endif
+
+#ifdef SIGLOST
+  V(SIGLOST);
+#endif
+
+#ifdef SIGPWR
+  V(SIGPWR);
+#endif
+
+#ifdef SIGINFO
+  V(SIGINFO);
+#endif
+
+#ifdef SIGSYS
+  V(SIGSYS);
+#endif
+
+#ifdef SIGUNUSED
+  V(SIGUNUSED);
+#endif
 #undef V
 
   return exports;

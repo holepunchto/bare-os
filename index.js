@@ -1,4 +1,8 @@
 const binding = require('./binding')
+const errors = require('./lib/errors')
+const constants = require('./lib/constants')
+
+exports.constants = constants
 
 // For Node.js compatibility
 exports.platform = function platform () {
@@ -36,4 +40,16 @@ exports.tmpdir = function tmpdir () {
 
 exports.homedir = function tmpdir () {
   return binding.homedir()
+}
+
+exports.kill = function kill (pid, signal = constants.signals.SIGTERM) {
+  if (typeof signal === 'string') {
+    if (signal in constants.signals === false) {
+      throw errors.UNKNOWN_SIGNAL('Unknown signal: ' + signal)
+    }
+
+    signal = constants.signals[signal]
+  }
+
+  binding.kill(pid, signal)
 }
