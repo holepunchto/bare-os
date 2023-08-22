@@ -5,6 +5,78 @@
 #include <uv.h>
 
 static js_value_t *
+bare_os_type (js_env_t *env, js_callback_info_t *info) {
+  int err;
+
+  uv_utsname_t buffer;
+  err = uv_os_uname(&buffer);
+  if (err < 0) {
+    js_throw_error(env, uv_err_name(err), uv_strerror(err));
+    return NULL;
+  }
+
+  js_value_t *result;
+  err = js_create_string_utf8(env, (utf8_t *) buffer.sysname, -1, &result);
+  if (err < 0) return NULL;
+
+  return result;
+}
+
+static js_value_t *
+bare_os_version (js_env_t *env, js_callback_info_t *info) {
+  int err;
+
+  uv_utsname_t buffer;
+  err = uv_os_uname(&buffer);
+  if (err < 0) {
+    js_throw_error(env, uv_err_name(err), uv_strerror(err));
+    return NULL;
+  }
+
+  js_value_t *result;
+  err = js_create_string_utf8(env, (utf8_t *) buffer.version, -1, &result);
+  if (err < 0) return NULL;
+
+  return result;
+}
+
+static js_value_t *
+bare_os_release (js_env_t *env, js_callback_info_t *info) {
+  int err;
+
+  uv_utsname_t buffer;
+  err = uv_os_uname(&buffer);
+  if (err < 0) {
+    js_throw_error(env, uv_err_name(err), uv_strerror(err));
+    return NULL;
+  }
+
+  js_value_t *result;
+  err = js_create_string_utf8(env, (utf8_t *) buffer.release, -1, &result);
+  if (err < 0) return NULL;
+
+  return result;
+}
+
+static js_value_t *
+bare_os_machine (js_env_t *env, js_callback_info_t *info) {
+  int err;
+
+  uv_utsname_t buffer;
+  err = uv_os_uname(&buffer);
+  if (err < 0) {
+    js_throw_error(env, uv_err_name(err), uv_strerror(err));
+    return NULL;
+  }
+
+  js_value_t *result;
+  err = js_create_string_utf8(env, (utf8_t *) buffer.machine, -1, &result);
+  if (err < 0) return NULL;
+
+  return result;
+}
+
+static js_value_t *
 bare_os_exec_path (js_env_t *env, js_callback_info_t *info) {
   int err;
 
@@ -172,6 +244,10 @@ init (js_env_t *env, js_value_t *exports) {
     err = js_set_named_property(env, exports, name, val); \
     assert(err == 0); \
   }
+  V("type", bare_os_type);
+  V("version", bare_os_version);
+  V("release", bare_os_release);
+  V("machine", bare_os_machine);
   V("execPath", bare_os_exec_path);
   V("pid", bare_os_pid);
   V("ppid", bare_os_ppid);

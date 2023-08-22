@@ -14,33 +14,17 @@ exports.arch = function arch () {
   return process.arch
 }
 
-exports.execPath = function pid () {
-  return binding.execPath()
-}
-
-exports.pid = function pid () {
-  return binding.pid()
-}
-
-exports.ppid = function ppid () {
-  return binding.ppid()
-}
-
-exports.cwd = function cwd () {
-  return binding.cwd()
-}
-
-exports.chdir = function chdir (directory) {
-  return binding.chdir(directory)
-}
-
-exports.tmpdir = function tmpdir () {
-  return binding.tmpdir()
-}
-
-exports.homedir = function tmpdir () {
-  return binding.homedir()
-}
+exports.type = binding.type
+exports.version = binding.version
+exports.release = binding.release
+exports.machine = binding.machine
+exports.execPath = binding.execPath
+exports.pid = binding.pid
+exports.ppid = binding.ppid
+exports.cwd = binding.cwd
+exports.chdir = binding.chdir
+exports.tmpdir = binding.tmpdir
+exports.homedir = binding.homedir
 
 exports.kill = function kill (pid, signal = constants.signals.SIGTERM) {
   if (typeof signal === 'string') {

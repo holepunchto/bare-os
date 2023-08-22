@@ -1,6 +1,22 @@
 const test = require('brittle')
 const os = require('.')
 
+test('type', (t) => {
+  t.comment(os.type())
+})
+
+test('version', (t) => {
+  t.comment(os.version())
+})
+
+test('release', (t) => {
+  t.comment(os.release())
+})
+
+test('machine', (t) => {
+  t.comment(os.machine())
+})
+
 test('platform', (t) => {
   t.comment(os.platform())
 })
