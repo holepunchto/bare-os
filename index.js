@@ -4,14 +4,12 @@ const constants = require('./lib/constants')
 
 exports.constants = constants
 
-// For Node.js compatibility
 exports.platform = function platform () {
-  return process.platform
+  return binding.platform
 }
 
-// For Node.js compatibility
 exports.arch = function arch () {
-  return process.arch
+  return binding.arch
 }
 
 exports.type = binding.type

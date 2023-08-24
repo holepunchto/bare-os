@@ -236,6 +236,18 @@ static js_value_t *
 init (js_env_t *env, js_value_t *exports) {
   int err;
 
+#define V(name, str) \
+  { \
+    js_value_t *val; \
+    err = js_create_string_utf8(env, (utf8_t *) str, -1, &val); \
+    assert(err == 0); \
+    err = js_set_named_property(env, exports, name, val); \
+    assert(err == 0); \
+  }
+  V("platform", BARE_PLATFORM);
+  V("arch", BARE_ARCH);
+#undef V
+
 #define V(name, fn) \
   { \
     js_value_t *val; \

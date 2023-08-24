@@ -1,6 +1,14 @@
 const test = require('brittle')
 const os = require('.')
 
+test('platform', (t) => {
+  t.comment(os.platform())
+})
+
+test('arch', (t) => {
+  t.comment(os.arch())
+})
+
 test('type', (t) => {
   t.comment(os.type())
 })
@@ -15,14 +23,6 @@ test('release', (t) => {
 
 test('machine', (t) => {
   t.comment(os.machine())
-})
-
-test('platform', (t) => {
-  t.comment(os.platform())
-})
-
-test('arch', (t) => {
-  t.comment(os.arch())
 })
 
 test('execPath', (t) => {
