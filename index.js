@@ -41,7 +41,7 @@ exports.getProcessTitle = binding.getProcessTitle
 exports.setProcessTitle = function setProcessTitle (title) {
   if (typeof title !== 'string') title = title.toString()
 
-  if (title.length > 256) {
+  if (title.length >= 256) {
     throw errors.TITLE_OVERFLOW('Process title is too long')
   }
 
