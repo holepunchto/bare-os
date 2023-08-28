@@ -35,3 +35,15 @@ exports.kill = function kill (pid, signal = constants.signals.SIGTERM) {
 
   binding.kill(pid, signal)
 }
+
+exports.getProcessTitle = binding.getProcessTitle
+
+exports.setProcessTitle = function setProcessTitle (title) {
+  if (typeof title !== 'string') title = title.toString()
+
+  if (title.length > 256) {
+    throw new Error('Process title is too long')
+  }
+
+  binding.setProcessTitle(title)
+}

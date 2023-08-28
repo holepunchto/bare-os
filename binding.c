@@ -233,6 +233,46 @@ bare_os_kill (js_env_t *env, js_callback_info_t *info) {
 }
 
 static js_value_t *
+bare_os_get_process_title (js_env_t *env, js_callback_info_t *info) {
+  int err;
+
+  char title[256];
+  err = uv_get_process_title(title, 256);
+  if (err < 0) {
+    js_throw_error(env, uv_err_name(err), uv_strerror(err));
+    return NULL;
+  }
+
+  js_value_t *result;
+  err = js_create_string_utf8(env, (utf8_t *) title, -1, &result);
+  assert(err == 0);
+
+  return result;
+}
+
+static js_value_t *
+bare_os_set_process_title (js_env_t *env, js_callback_info_t *info) {
+  int err;
+
+  size_t argc = 1;
+  js_value_t *argv[1];
+
+  err = js_get_callback_info(env, info, &argc, argv, NULL, NULL);
+  assert(err == 0);
+
+  assert(argc == 1);
+
+  utf8_t data[256];
+  err = js_get_value_string_utf8(env, argv[0], data, 256, NULL);
+  assert(err == 0);
+
+  err = uv_set_process_title((char *) data);
+  assert(err == 0);
+
+  return NULL;
+}
+
+static js_value_t *
 init (js_env_t *env, js_value_t *exports) {
   int err;
 
@@ -268,6 +308,8 @@ init (js_env_t *env, js_value_t *exports) {
   V("tmpdir", bare_os_tmpdir);
   V("homedir", bare_os_homedir);
   V("kill", bare_os_kill);
+  V("getProcessTitle", bare_os_get_process_title);
+  V("setProcessTitle", bare_os_set_process_title);
 #undef V
 
   js_value_t *signals;

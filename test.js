@@ -48,3 +48,7 @@ test('tmpdir', (t) => {
 test('homedir', (t) => {
   t.comment(os.homedir())
 })
+
+test('process title', (t) => {
+  t.comment(os.getProcessTitle())
+})
