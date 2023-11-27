@@ -1,8 +1,19 @@
 #include <assert.h>
 #include <bare.h>
 #include <js.h>
+#include <stdlib.h>
 #include <utf.h>
 #include <uv.h>
+
+static uv_rwlock_t bare_os_env_lock;
+
+static uv_once_t bare_os_env_lock_guard = UV_ONCE_INIT;
+
+static void
+bare_os_env_on_lock_init (void) {
+  int err = uv_rwlock_init(&bare_os_env_lock);
+  assert(err == 0);
+}
 
 static js_value_t *
 bare_os_type (js_env_t *env, js_callback_info_t *info) {
@@ -273,7 +284,232 @@ bare_os_set_process_title (js_env_t *env, js_callback_info_t *info) {
 }
 
 static js_value_t *
+bare_os_get_env_keys (js_env_t *env, js_callback_info_t *info) {
+  int err;
+
+  uv_env_item_t *items;
+  int len;
+
+  uv_rwlock_rdlock(&bare_os_env_lock);
+
+  err = uv_os_environ(&items, &len);
+
+  uv_rwlock_rdunlock(&bare_os_env_lock);
+
+  if (err < 0) {
+    js_throw_error(env, uv_err_name(err), uv_strerror(err));
+    return NULL;
+  }
+
+  js_value_t *result;
+  err = js_create_array_with_length(env, len, &result);
+  assert(err == 0);
+
+  for (int i = 0; i < len; i++) {
+    uv_env_item_t *item = &items[i];
+
+    js_value_t *val;
+    err = js_create_string_utf8(env, (utf8_t *) item->name, -1, &val);
+    assert(err == 0);
+
+    err = js_set_element(env, result, i, val);
+    assert(err == 0);
+  }
+
+  uv_os_free_environ(items, len);
+
+  return result;
+}
+
+static js_value_t *
+bare_os_get_env (js_env_t *env, js_callback_info_t *info) {
+  int err;
+
+  size_t argc = 1;
+  js_value_t *argv[1];
+
+  err = js_get_callback_info(env, info, &argc, argv, NULL, NULL);
+  assert(err == 0);
+
+  assert(argc == 1);
+
+  size_t name_len;
+  err = js_get_value_string_utf8(env, argv[0], NULL, 0, &name_len);
+  assert(err == 0);
+
+  name_len += 1 /* NULL */;
+
+  utf8_t *name = malloc(name_len);
+  err = js_get_value_string_utf8(env, argv[0], name, name_len, &name_len);
+  assert(err == 0);
+
+  uv_rwlock_rdlock(&bare_os_env_lock);
+
+  size_t value_len = 256;
+  char *value = malloc(value_len);
+  err = uv_os_getenv((char *) name, value, &value_len);
+
+  js_value_t *result;
+
+  if (err == UV_ENOENT) {
+    err = js_get_undefined(env, &result);
+    assert(err == 0);
+  } else {
+    if (err == UV_ENOBUFS) {
+      value = realloc(value, value_len);
+
+      err = uv_os_getenv((char *) name, value, &value_len);
+      assert(err == 0);
+    } else if (err < 0) {
+      uv_rwlock_rdunlock(&bare_os_env_lock);
+      js_throw_error(env, uv_err_name(err), uv_strerror(err));
+      free(name);
+      return NULL;
+    }
+
+    err = js_create_string_utf8(env, (utf8_t *) value, value_len, &result);
+    assert(err == 0);
+  }
+
+  uv_rwlock_rdunlock(&bare_os_env_lock);
+
+  free(name);
+  free(value);
+
+  return result;
+}
+
+static js_value_t *
+bare_os_has_env (js_env_t *env, js_callback_info_t *info) {
+  int err;
+
+  size_t argc = 1;
+  js_value_t *argv[1];
+
+  err = js_get_callback_info(env, info, &argc, argv, NULL, NULL);
+  assert(err == 0);
+
+  assert(argc == 1);
+
+  size_t name_len;
+  err = js_get_value_string_utf8(env, argv[0], NULL, 0, &name_len);
+  assert(err == 0);
+
+  utf8_t *name = malloc(++name_len);
+  err = js_get_value_string_utf8(env, argv[0], name, name_len, &name_len);
+  assert(err == 0);
+
+  uv_rwlock_rdlock(&bare_os_env_lock);
+
+  size_t value_len = 1;
+  char value[1];
+  err = uv_os_getenv((char *) name, value, &value_len);
+
+  uv_rwlock_rdunlock(&bare_os_env_lock);
+
+  if (err != 0 && err != UV_ENOENT && err != UV_ENOBUFS) {
+    js_throw_error(env, uv_err_name(err), uv_strerror(err));
+    free(name);
+    return NULL;
+  }
+
+  free(name);
+
+  js_value_t *result;
+  err = js_get_boolean(env, err != UV_ENOENT, &result);
+  assert(err == 0);
+
+  return result;
+}
+
+static js_value_t *
+bare_os_set_env (js_env_t *env, js_callback_info_t *info) {
+  int err;
+
+  size_t argc = 2;
+  js_value_t *argv[2];
+
+  err = js_get_callback_info(env, info, &argc, argv, NULL, NULL);
+  assert(err == 0);
+
+  assert(argc == 2);
+
+  size_t name_len;
+  err = js_get_value_string_utf8(env, argv[0], NULL, 0, &name_len);
+  assert(err == 0);
+
+  utf8_t *name = malloc(++name_len);
+  err = js_get_value_string_utf8(env, argv[0], name, name_len, &name_len);
+  assert(err == 0);
+
+  size_t value_len;
+  err = js_get_value_string_utf8(env, argv[1], NULL, 0, &value_len);
+  assert(err == 0);
+
+  utf8_t *value = malloc(++value_len);
+  err = js_get_value_string_utf8(env, argv[1], value, value_len, &value_len);
+  assert(err == 0);
+
+  uv_rwlock_wrlock(&bare_os_env_lock);
+
+  err = uv_os_setenv((char *) name, (char *) value);
+
+  uv_rwlock_wrunlock(&bare_os_env_lock);
+
+  if (err < 0) {
+    js_throw_error(env, uv_err_name(err), uv_strerror(err));
+    free(name);
+    free(value);
+    return NULL;
+  }
+
+  free(name);
+  free(value);
+
+  return NULL;
+}
+
+static js_value_t *
+bare_os_unset_env (js_env_t *env, js_callback_info_t *info) {
+  int err;
+
+  size_t argc = 1;
+  js_value_t *argv[1];
+
+  err = js_get_callback_info(env, info, &argc, argv, NULL, NULL);
+  assert(err == 0);
+
+  assert(argc == 1);
+
+  size_t name_len;
+  err = js_get_value_string_utf8(env, argv[0], NULL, 0, &name_len);
+  assert(err == 0);
+
+  utf8_t *name = malloc(++name_len);
+  err = js_get_value_string_utf8(env, argv[0], name, name_len, &name_len);
+  assert(err == 0);
+
+  uv_rwlock_wrlock(&bare_os_env_lock);
+
+  err = uv_os_unsetenv((char *) name);
+
+  uv_rwlock_wrunlock(&bare_os_env_lock);
+
+  if (err < 0) {
+    js_throw_error(env, uv_err_name(err), uv_strerror(err));
+    free(name);
+    return NULL;
+  }
+
+  free(name);
+
+  return NULL;
+}
+
+static js_value_t *
 init (js_env_t *env, js_value_t *exports) {
+  uv_once(&bare_os_env_lock_guard, bare_os_env_on_lock_init);
+
   int err;
 
 #define V(name, str) \
@@ -310,6 +546,11 @@ init (js_env_t *env, js_value_t *exports) {
   V("kill", bare_os_kill);
   V("getProcessTitle", bare_os_get_process_title);
   V("setProcessTitle", bare_os_set_process_title);
+  V("getEnvKeys", bare_os_get_env_keys)
+  V("getEnv", bare_os_get_env)
+  V("hasEnv", bare_os_get_env)
+  V("setEnv", bare_os_set_env)
+  V("unsetEnv", bare_os_unset_env)
 #undef V
 
   js_value_t *signals;
