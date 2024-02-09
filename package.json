@@ -1,6 +1,6 @@
 {
   "name": "bare-os",
-  "version": "2.1.1",
+  "version": "2.1.2",
   "description": "Operating system utilities for Javascript",
   "main": "index.js",
   "files": [
