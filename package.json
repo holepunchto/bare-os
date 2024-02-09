@@ -11,9 +11,7 @@
     "lib",
     "prebuilds"
   ],
-  "addon": {
-    "target": "bare_os"
-  },
+  "addon": true,
   "scripts": {
     "test": "standard && bare test.js"
   },
