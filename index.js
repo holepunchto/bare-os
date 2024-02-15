@@ -4,6 +4,8 @@ const constants = require('./lib/constants')
 
 exports.constants = constants
 
+exports.EOL = binding.platform === 'win32' ? '\r\n' : '\n'
+
 exports.platform = function platform () {
   return binding.platform
 }

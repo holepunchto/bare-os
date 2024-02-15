@@ -1,6 +1,10 @@
 const test = require('brittle')
 const os = require('.')
 
+test('EOL', (t) => {
+  t.comment(os.EOL.replace('\n', '\\n').replace('\r', '\\r'))
+})
+
 test('platform', (t) => {
   t.comment(os.platform())
 })
