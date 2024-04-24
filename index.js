@@ -25,6 +25,7 @@ exports.cwd = binding.cwd
 exports.chdir = binding.chdir
 exports.tmpdir = binding.tmpdir
 exports.homedir = binding.homedir
+exports.hostname = binding.hostname
 exports.getEnvKeys = binding.getEnvKeys
 exports.getEnv = binding.getEnv
 exports.hasEnv = binding.hasEnv

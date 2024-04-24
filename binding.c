@@ -10,7 +10,7 @@ static uv_rwlock_t bare_os_env_lock;
 static uv_once_t bare_os_env_lock_guard = UV_ONCE_INIT;
 
 static void
-bare_os_env_on_lock_init (void) {
+bare_os__on_env_lock_init (void) {
   int err = uv_rwlock_init(&bare_os_env_lock);
   assert(err == 0);
 }
@@ -209,6 +209,26 @@ bare_os_homedir (js_env_t *env, js_callback_info_t *info) {
 
   js_value_t *result;
   err = js_create_string_utf8(env, (utf8_t *) homedir, len, &result);
+  if (err < 0) return NULL;
+
+  return result;
+}
+
+static js_value_t *
+bare_os_hostname (js_env_t *env, js_callback_info_t *info) {
+  int err;
+
+  size_t len = UV_MAXHOSTNAMESIZE;
+  char hostname[UV_MAXHOSTNAMESIZE];
+
+  err = uv_os_gethostname(hostname, &len);
+  if (err < 0) {
+    js_throw_error(env, uv_err_name(err), uv_strerror(err));
+    return NULL;
+  }
+
+  js_value_t *result;
+  err = js_create_string_utf8(env, (utf8_t *) hostname, len, &result);
   if (err < 0) return NULL;
 
   return result;
@@ -507,8 +527,8 @@ bare_os_unset_env (js_env_t *env, js_callback_info_t *info) {
 }
 
 static js_value_t *
-init (js_env_t *env, js_value_t *exports) {
-  uv_once(&bare_os_env_lock_guard, bare_os_env_on_lock_init);
+bare_os_exports (js_env_t *env, js_value_t *exports) {
+  uv_once(&bare_os_env_lock_guard, bare_os__on_env_lock_init);
 
   int err;
 
@@ -543,6 +563,7 @@ init (js_env_t *env, js_value_t *exports) {
   V("chdir", bare_os_chdir);
   V("tmpdir", bare_os_tmpdir);
   V("homedir", bare_os_homedir);
+  V("hostname", bare_os_hostname);
   V("kill", bare_os_kill);
   V("getProcessTitle", bare_os_get_process_title);
   V("setProcessTitle", bare_os_set_process_title);
@@ -736,4 +757,4 @@ init (js_env_t *env, js_value_t *exports) {
   return exports;
 }
 
-BARE_MODULE(bare_os, init)
+BARE_MODULE(bare_os, bare_os_exports)

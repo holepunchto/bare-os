@@ -53,6 +53,10 @@ test('homedir', (t) => {
   t.comment(os.homedir())
 })
 
+test('hostname', (t) => {
+  t.comment(os.hostname())
+})
+
 test('process title', (t) => {
   t.comment(os.getProcessTitle())
 })
