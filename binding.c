@@ -264,6 +264,63 @@ bare_os_kill (js_env_t *env, js_callback_info_t *info) {
 }
 
 static js_value_t *
+bare_os_resource_usage (js_env_t *env, js_callback_info_t *info) {
+  int err;
+
+  uv_rusage_t usage;
+  err = uv_getrusage(&usage);
+  assert(err == 0);
+
+  js_value_t *result;
+  err = js_create_object(env, &result);
+  assert(err == 0);
+
+#define V(name, property) \
+  { \
+    uv_timeval_t time = usage.ru_##property; \
+\
+    js_value_t *value; \
+    err = js_create_int64(env, time.tv_sec * 1e6 + time.tv_usec, &value); \
+    assert(err == 0); \
+\
+    err = js_set_named_property(env, result, name, value); \
+    assert(err == 0); \
+  }
+
+  V("userCPUTime", utime)
+  V("systemCPUTime", stime)
+#undef V
+
+#define V(name, property) \
+  { \
+    js_value_t *value; \
+    err = js_create_int64(env, usage.ru_##property, &value); \
+    assert(err == 0); \
+\
+    err = js_set_named_property(env, result, name, value); \
+    assert(err == 0); \
+  }
+
+  V("maxRSS", maxrss)
+  V("sharedMemorySize", ixrss)
+  V("unsharedDataSize", idrss)
+  V("unsharedStackSize", isrss)
+  V("minorPageFault", minflt)
+  V("majorPageFault", majflt)
+  V("swappedOut", nswap)
+  V("fsRead", inblock)
+  V("fsWrite", oublock)
+  V("ipcSent", msgsnd)
+  V("ipcReceived", msgrcv)
+  V("signalsCount", nsignals)
+  V("voluntaryContextSwitches", nvcsw)
+  V("involuntaryContextSwitches", nivcsw)
+#undef V
+
+  return result;
+}
+
+static js_value_t *
 bare_os_get_process_title (js_env_t *env, js_callback_info_t *info) {
   int err;
 
@@ -540,8 +597,9 @@ bare_os_exports (js_env_t *env, js_value_t *exports) {
     err = js_set_named_property(env, exports, name, val); \
     assert(err == 0); \
   }
-  V("platform", BARE_PLATFORM);
-  V("arch", BARE_ARCH);
+
+  V("platform", BARE_PLATFORM)
+  V("arch", BARE_ARCH)
 #undef V
 
 #define V(name, fn) \
@@ -552,21 +610,23 @@ bare_os_exports (js_env_t *env, js_value_t *exports) {
     err = js_set_named_property(env, exports, name, val); \
     assert(err == 0); \
   }
-  V("type", bare_os_type);
-  V("version", bare_os_version);
-  V("release", bare_os_release);
-  V("machine", bare_os_machine);
-  V("execPath", bare_os_exec_path);
-  V("pid", bare_os_pid);
-  V("ppid", bare_os_ppid);
-  V("cwd", bare_os_cwd);
-  V("chdir", bare_os_chdir);
-  V("tmpdir", bare_os_tmpdir);
-  V("homedir", bare_os_homedir);
-  V("hostname", bare_os_hostname);
-  V("kill", bare_os_kill);
-  V("getProcessTitle", bare_os_get_process_title);
-  V("setProcessTitle", bare_os_set_process_title);
+
+  V("type", bare_os_type)
+  V("version", bare_os_version)
+  V("release", bare_os_release)
+  V("machine", bare_os_machine)
+  V("execPath", bare_os_exec_path)
+  V("pid", bare_os_pid)
+  V("ppid", bare_os_ppid)
+  V("cwd", bare_os_cwd)
+  V("chdir", bare_os_chdir)
+  V("tmpdir", bare_os_tmpdir)
+  V("homedir", bare_os_homedir)
+  V("hostname", bare_os_hostname)
+  V("kill", bare_os_kill)
+  V("resourceUsage", bare_os_resource_usage)
+  V("getProcessTitle", bare_os_get_process_title)
+  V("setProcessTitle", bare_os_set_process_title)
   V("getEnvKeys", bare_os_get_env_keys)
   V("getEnv", bare_os_get_env)
   V("hasEnv", bare_os_get_env)
@@ -589,148 +649,115 @@ bare_os_exports (js_env_t *env, js_value_t *exports) {
     err = js_set_named_property(env, signals, #name, val); \
     assert(err == 0); \
   }
+
 #ifdef SIGHUP
   V(SIGHUP);
 #endif
-
 #ifdef SIGINT
   V(SIGINT);
 #endif
-
 #ifdef SIGQUIT
   V(SIGQUIT);
 #endif
-
 #ifdef SIGILL
   V(SIGILL);
 #endif
-
 #ifdef SIGTRAP
   V(SIGTRAP);
 #endif
-
 #ifdef SIGABRT
   V(SIGABRT);
 #endif
-
 #ifdef SIGIOT
   V(SIGIOT);
 #endif
-
 #ifdef SIGBUS
   V(SIGBUS);
 #endif
-
 #ifdef SIGFPE
   V(SIGFPE);
 #endif
-
 #ifdef SIGKILL
   V(SIGKILL);
 #endif
-
 #ifdef SIGUSR1
   V(SIGUSR1);
 #endif
-
 #ifdef SIGSEGV
   V(SIGSEGV);
 #endif
-
 #ifdef SIGUSR2
   V(SIGUSR2);
 #endif
-
 #ifdef SIGPIPE
   V(SIGPIPE);
 #endif
-
 #ifdef SIGALRM
   V(SIGALRM);
 #endif
-
+#ifdef SIGTERM
   V(SIGTERM);
-
+#endif
 #ifdef SIGCHLD
   V(SIGCHLD);
 #endif
-
 #ifdef SIGSTKFLT
   V(SIGSTKFLT);
 #endif
-
 #ifdef SIGCONT
   V(SIGCONT);
 #endif
-
 #ifdef SIGSTOP
   V(SIGSTOP);
 #endif
-
 #ifdef SIGTSTP
   V(SIGTSTP);
 #endif
-
 #ifdef SIGBREAK
   V(SIGBREAK);
 #endif
-
 #ifdef SIGTTIN
   V(SIGTTIN);
 #endif
-
 #ifdef SIGTTOU
   V(SIGTTOU);
 #endif
-
 #ifdef SIGURG
   V(SIGURG);
 #endif
-
 #ifdef SIGXCPU
   V(SIGXCPU);
 #endif
-
 #ifdef SIGXFSZ
   V(SIGXFSZ);
 #endif
-
 #ifdef SIGVTALRM
   V(SIGVTALRM);
 #endif
-
 #ifdef SIGPROF
   V(SIGPROF);
 #endif
-
 #ifdef SIGWINCH
   V(SIGWINCH);
 #endif
-
 #ifdef SIGIO
   V(SIGIO);
 #endif
-
 #ifdef SIGPOLL
   V(SIGPOLL);
 #endif
-
 #ifdef SIGLOST
   V(SIGLOST);
 #endif
-
 #ifdef SIGPWR
   V(SIGPWR);
 #endif
-
 #ifdef SIGINFO
   V(SIGINFO);
 #endif
-
 #ifdef SIGSYS
   V(SIGSYS);
 #endif
-
 #ifdef SIGUNUSED
   V(SIGUNUSED);
 #endif
@@ -751,6 +778,7 @@ bare_os_exports (js_env_t *env, js_value_t *exports) {
     err = js_set_named_property(env, errnos, #name, val); \
     assert(err == 0); \
   }
+
   UV_ERRNO_MAP(V);
 #undef V
 

@@ -60,3 +60,7 @@ test('hostname', (t) => {
 test('process title', (t) => {
   t.comment(os.getProcessTitle())
 })
+
+test('resource usage', (t) => {
+  t.comment(os.resourceUsage())
+})

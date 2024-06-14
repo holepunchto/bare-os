@@ -26,11 +26,6 @@ exports.chdir = binding.chdir
 exports.tmpdir = binding.tmpdir
 exports.homedir = binding.homedir
 exports.hostname = binding.hostname
-exports.getEnvKeys = binding.getEnvKeys
-exports.getEnv = binding.getEnv
-exports.hasEnv = binding.hasEnv
-exports.setEnv = binding.setEnv
-exports.unsetEnv = binding.unsetEnv
 
 exports.kill = function kill (pid, signal = constants.signals.SIGTERM) {
   if (typeof signal === 'string') {
@@ -44,6 +39,7 @@ exports.kill = function kill (pid, signal = constants.signals.SIGTERM) {
   binding.kill(pid, signal)
 }
 
+exports.resourceUsage = binding.resourceUsage
 exports.getProcessTitle = binding.getProcessTitle
 
 exports.setProcessTitle = function setProcessTitle (title) {
@@ -55,3 +51,9 @@ exports.setProcessTitle = function setProcessTitle (title) {
 
   binding.setProcessTitle(title)
 }
+
+exports.getEnvKeys = binding.getEnvKeys
+exports.getEnv = binding.getEnv
+exports.hasEnv = binding.hasEnv
+exports.setEnv = binding.setEnv
+exports.unsetEnv = binding.unsetEnv
