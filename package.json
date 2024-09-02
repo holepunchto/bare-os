@@ -30,6 +30,9 @@
     "url": "https://github.com/holepunchto/bare-os/issues"
   },
   "homepage": "https://github.com/holepunchto/bare-os#readme",
+  "engines": {
+    "bare": ">=1.6.0"
+  },
   "devDependencies": {
     "brittle": "^3.1.1",
     "standard": "^17.0.0"

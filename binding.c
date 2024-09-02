@@ -321,6 +321,35 @@ bare_os_resource_usage (js_env_t *env, js_callback_info_t *info) {
 }
 
 static js_value_t *
+bare_os_memory_usage (js_env_t *env, js_callback_info_t *info) {
+  int err;
+
+  js_heap_statistics_t stats = {.version = 0};
+  err = js_get_heap_statistics(env, &stats);
+  assert(err == 0);
+
+  js_value_t *result;
+  err = js_create_object(env, &result);
+  assert(err == 0);
+
+#define V(name, property) \
+  { \
+    js_value_t *value; \
+    err = js_create_int64(env, stats.property, &value); \
+    assert(err == 0); \
+\
+    err = js_set_named_property(env, result, name, value); \
+    assert(err == 0); \
+  }
+
+  V("heapTotal", total_heap_size)
+  V("heapUsed", used_heap_size)
+#undef V
+
+  return result;
+}
+
+static js_value_t *
 bare_os_get_process_title (js_env_t *env, js_callback_info_t *info) {
   int err;
 
@@ -625,6 +654,7 @@ bare_os_exports (js_env_t *env, js_value_t *exports) {
   V("hostname", bare_os_hostname)
   V("kill", bare_os_kill)
   V("resourceUsage", bare_os_resource_usage)
+  V("memoryUsage", bare_os_memory_usage)
   V("getProcessTitle", bare_os_get_process_title)
   V("setProcessTitle", bare_os_set_process_title)
   V("getEnvKeys", bare_os_get_env_keys)

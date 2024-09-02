@@ -40,6 +40,7 @@ exports.kill = function kill (pid, signal = constants.signals.SIGTERM) {
 }
 
 exports.resourceUsage = binding.resourceUsage
+exports.memoryUsage = binding.memoryUsage
 exports.getProcessTitle = binding.getProcessTitle
 
 exports.setProcessTitle = function setProcessTitle (title) {

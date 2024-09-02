@@ -64,3 +64,7 @@ test('process title', (t) => {
 test('resource usage', (t) => {
   t.comment(os.resourceUsage())
 })
+
+test('memory usage', (t) => {
+  t.comment(os.memoryUsage())
+})
