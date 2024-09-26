@@ -324,7 +324,17 @@ static js_value_t *
 bare_os_memory_usage (js_env_t *env, js_callback_info_t *info) {
   int err;
 
-  js_heap_statistics_t stats = {.version = 0};
+  js_heap_statistics_t stats = {
+    .version = 1,
+
+    // Since 0
+    .total_heap_size = -1,
+    .used_heap_size = -1,
+
+    // Since 1
+    .external_memory = -1,
+  };
+
   err = js_get_heap_statistics(env, &stats);
   assert(err == 0);
 
@@ -334,16 +344,19 @@ bare_os_memory_usage (js_env_t *env, js_callback_info_t *info) {
 
 #define V(name, property) \
   { \
-    js_value_t *value; \
-    err = js_create_int64(env, stats.property, &value); \
-    assert(err == 0); \
+    if (stats.property != (size_t) - 1) { \
+      js_value_t *value; \
+      err = js_create_int64(env, stats.property, &value); \
+      assert(err == 0); \
 \
-    err = js_set_named_property(env, result, name, value); \
-    assert(err == 0); \
+      err = js_set_named_property(env, result, name, value); \
+      assert(err == 0); \
+    } \
   }
 
   V("heapTotal", total_heap_size)
   V("heapUsed", used_heap_size)
+  V("external", external_memory)
 #undef V
 
   return result;
