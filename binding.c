@@ -264,6 +264,48 @@ bare_os_kill (js_env_t *env, js_callback_info_t *info) {
 }
 
 static js_value_t *
+bare_os_available_parallelism (js_env_t *env, js_callback_info_t *info) {
+  int err;
+
+  js_value_t *result;
+  err = js_create_int64(env, uv_available_parallelism(), &result);
+  assert(err == 0);
+
+  return result;
+}
+
+static js_value_t *
+bare_os_cpu_usage (js_env_t *env, js_callback_info_t *info) {
+  int err;
+
+  uv_rusage_t usage;
+  err = uv_getrusage(&usage);
+  assert(err == 0);
+
+  js_value_t *result;
+  err = js_create_object(env, &result);
+  assert(err == 0);
+
+#define V(name, property) \
+  { \
+    uv_timeval_t time = usage.ru_##property; \
+\
+    js_value_t *value; \
+    err = js_create_int64(env, time.tv_sec * 1e6 + time.tv_usec, &value); \
+    assert(err == 0); \
+\
+    err = js_set_named_property(env, result, name, value); \
+    assert(err == 0); \
+  }
+
+  V("user", utime)
+  V("system", stime)
+#undef V
+
+  return result;
+}
+
+static js_value_t *
 bare_os_resource_usage (js_env_t *env, js_callback_info_t *info) {
   int err;
 
@@ -358,6 +400,62 @@ bare_os_memory_usage (js_env_t *env, js_callback_info_t *info) {
   V("heapUsed", used_heap_size)
   V("external", external_memory)
 #undef V
+
+  return result;
+}
+
+static js_value_t *
+bare_os_freemem (js_env_t *env, js_callback_info_t *info) {
+  int err;
+
+  js_value_t *result;
+  err = js_create_int64(env, uv_get_free_memory(), &result);
+  assert(err == 0);
+
+  return result;
+}
+
+static js_value_t *
+bare_os_totalmem (js_env_t *env, js_callback_info_t *info) {
+  int err;
+
+  js_value_t *result;
+  err = js_create_int64(env, uv_get_total_memory(), &result);
+  assert(err == 0);
+
+  return result;
+}
+
+static js_value_t *
+bare_os_uptime (js_env_t *env, js_callback_info_t *info) {
+  int err;
+
+  double uptime;
+  err = uv_uptime(&uptime);
+  assert(err == 0);
+
+  js_value_t *result;
+  err = js_create_double(env, uptime, &result);
+  assert(err == 0);
+
+  return result;
+}
+
+static js_value_t *
+bare_os_loadavg (js_env_t *env, js_callback_info_t *info) {
+  int err;
+
+  double *data;
+
+  js_value_t *arraybuffer;
+  err = js_create_arraybuffer(env, sizeof(double) * 3, (void **) &data, &arraybuffer);
+  assert(err == 0);
+
+  js_value_t *result;
+  err = js_create_typedarray(env, js_float64array, 3, arraybuffer, 0, &result);
+  assert(err == 0);
+
+  uv_loadavg(data);
 
   return result;
 }
@@ -666,8 +764,14 @@ bare_os_exports (js_env_t *env, js_value_t *exports) {
   V("homedir", bare_os_homedir)
   V("hostname", bare_os_hostname)
   V("kill", bare_os_kill)
+  V("availableParallelism", bare_os_available_parallelism)
+  V("cpuUsage", bare_os_cpu_usage)
   V("resourceUsage", bare_os_resource_usage)
   V("memoryUsage", bare_os_memory_usage)
+  V("freemem", bare_os_freemem)
+  V("totalmem", bare_os_totalmem)
+  V("uptime", bare_os_uptime)
+  V("loadavg", bare_os_loadavg)
   V("getProcessTitle", bare_os_get_process_title)
   V("setProcessTitle", bare_os_set_process_title)
   V("getEnvKeys", bare_os_get_env_keys)
@@ -676,6 +780,18 @@ bare_os_exports (js_env_t *env, js_value_t *exports) {
   V("setEnv", bare_os_set_env)
   V("unsetEnv", bare_os_unset_env)
 #undef V
+
+  const union {
+    uint8_t u8[2];
+    uint16_t u16;
+  } byte_order = {{1, 0}};
+
+  js_value_t *is_little_endian;
+  err = js_get_boolean(env, byte_order.u16 == 1, &is_little_endian);
+  assert(err == 0);
+
+  err = js_set_named_property(env, exports, "isLittleEndian", is_little_endian);
+  assert(err == 0);
 
   js_value_t *signals;
   err = js_create_object(env, &signals);

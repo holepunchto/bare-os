@@ -39,8 +39,32 @@ exports.kill = function kill (pid, signal = constants.signals.SIGTERM) {
   binding.kill(pid, signal)
 }
 
+exports.endianness = function endianness () {
+  return binding.isLittleEndian ? 'LE' : 'BE'
+}
+
+exports.availableParallelism = binding.availableParallelism
+
+exports.cpuUsage = function cpuUsage (previous) {
+  const current = binding.cpuUsage()
+
+  if (previous) {
+    return {
+      user: current.user - previous.user,
+      system: current.system - previous.system
+    }
+  }
+
+  return current
+}
+
 exports.resourceUsage = binding.resourceUsage
 exports.memoryUsage = binding.memoryUsage
+exports.freemem = binding.freemem
+exports.totalmem = binding.totalmem
+exports.uptime = binding.uptime
+exports.loadavg = binding.loadavg
+
 exports.getProcessTitle = binding.getProcessTitle
 
 exports.setProcessTitle = function setProcessTitle (title) {

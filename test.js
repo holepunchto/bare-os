@@ -29,7 +29,7 @@ test('machine', (t) => {
   t.comment(os.machine())
 })
 
-test('execPath', (t) => {
+test('exec path', (t) => {
   t.comment(os.execPath())
 })
 
@@ -61,10 +61,38 @@ test('process title', (t) => {
   t.comment(os.getProcessTitle())
 })
 
+test('endianness', (t) => {
+  t.comment(os.endianness())
+})
+
+test('available parallelism', (t) => {
+  t.comment(os.availableParallelism())
+})
+
+test('cpu usage', (t) => {
+  t.comment(os.cpuUsage())
+})
+
 test('resource usage', (t) => {
   t.comment(os.resourceUsage())
 })
 
 test('memory usage', (t) => {
   t.comment(os.memoryUsage())
+})
+
+test('free memory', (t) => {
+  t.comment(os.freemem())
+})
+
+test('total memory', (t) => {
+  t.comment(os.totalmem())
+})
+
+test('uptime', (t) => {
+  t.comment(os.uptime())
+})
+
+test('load avg', (t) => {
+  t.comment(os.loadavg())
 })
