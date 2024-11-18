@@ -1,6 +1,6 @@
 {
   "name": "bare-os",
-  "version": "3.2.1",
+  "version": "3.3.0-0",
   "description": "Operating system utilities for Javascript",
   "exports": {
     ".": "./index.js",
