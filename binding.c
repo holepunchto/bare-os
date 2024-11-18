@@ -384,9 +384,20 @@ bare_os_memory_usage (js_env_t *env, js_callback_info_t *info) {
   err = js_create_object(env, &result);
   assert(err == 0);
 
+  size_t rss;
+  err = uv_resident_set_memory(&rss);
+  assert(err == 0);
+
+  js_value_t *value;
+  err = js_create_int64(env, rss, &value);
+  assert(err == 0);
+
+  err = js_set_named_property(env, result, "rss", value);
+  assert(err == 0);
+
 #define V(name, property) \
   { \
-    if (stats.property != (size_t) - 1) { \
+    if (stats.property != (size_t) -1) { \
       js_value_t *value; \
       err = js_create_int64(env, stats.property, &value); \
       assert(err == 0); \
