@@ -6,11 +6,11 @@ exports.constants = constants
 
 exports.EOL = binding.platform === 'win32' ? '\r\n' : '\n'
 
-exports.platform = function platform () {
+exports.platform = function platform() {
   return binding.platform
 }
 
-exports.arch = function arch () {
+exports.arch = function arch() {
   return binding.arch
 }
 
@@ -27,7 +27,7 @@ exports.tmpdir = binding.tmpdir
 exports.homedir = binding.homedir
 exports.hostname = binding.hostname
 
-exports.kill = function kill (pid, signal = constants.signals.SIGTERM) {
+exports.kill = function kill(pid, signal = constants.signals.SIGTERM) {
   if (typeof signal === 'string') {
     if (signal in constants.signals === false) {
       throw errors.UNKNOWN_SIGNAL('Unknown signal: ' + signal)
@@ -39,13 +39,13 @@ exports.kill = function kill (pid, signal = constants.signals.SIGTERM) {
   binding.kill(pid, signal)
 }
 
-exports.endianness = function endianness () {
+exports.endianness = function endianness() {
   return binding.isLittleEndian ? 'LE' : 'BE'
 }
 
 exports.availableParallelism = binding.availableParallelism
 
-exports.cpuUsage = function cpuUsage (previous) {
+exports.cpuUsage = function cpuUsage(previous) {
   const current = binding.cpuUsage()
 
   if (previous) {
@@ -67,7 +67,7 @@ exports.loadavg = binding.loadavg
 
 exports.getProcessTitle = binding.getProcessTitle
 
-exports.setProcessTitle = function setProcessTitle (title) {
+exports.setProcessTitle = function setProcessTitle(title) {
   if (typeof title !== 'string') title = title.toString()
 
   if (title.length >= 256) {
