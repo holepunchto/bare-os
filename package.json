@@ -3,13 +3,17 @@
   "version": "3.3.0",
   "description": "Operating system utilities for Javascript",
   "exports": {
-    ".": "./index.js",
+    ".": {
+      "types": "./index.d.ts",
+      "default": "./index.js"
+    },
     "./package": "./package.json",
     "./constants": "./lib/constants.js",
     "./errors": "./lib/errors.js"
   },
   "files": [
     "index.js",
+    "index.d.ts",
     "binding.c",
     "binding.js",
     "CMakeLists.txt",
