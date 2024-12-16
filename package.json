@@ -3,13 +3,17 @@
   "version": "3.3.0",
   "description": "Operating system utilities for Javascript",
   "exports": {
-    ".": "./index.js",
+    ".": {
+      "types": "./index.d.ts",
+      "default": "./index.js"
+    },
     "./package": "./package.json",
     "./constants": "./lib/constants.js",
     "./errors": "./lib/errors.js"
   },
   "files": [
     "index.js",
+    "index.d.ts",
     "binding.c",
     "binding.js",
     "CMakeLists.txt",
@@ -18,7 +22,7 @@
   ],
   "addon": true,
   "scripts": {
-    "test": "standard && bare test.js"
+    "test": "prettier . --check && bare test.js"
   },
   "repository": {
     "type": "git",
@@ -36,6 +40,7 @@
   "devDependencies": {
     "brittle": "^3.1.1",
     "cmake-bare": "^1.1.6",
-    "standard": "^17.0.0"
+    "prettier": "^3.4.2",
+    "prettier-config-standard": "^7.0.0"
   }
 }
