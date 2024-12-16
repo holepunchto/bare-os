@@ -33,7 +33,7 @@ export function homedir(): string
 
 export function hostname(): string
 
-export function kill(pid: string, signal?: string | number): void
+export function kill(pid: number, signal?: string | number): void
 
 export function endianness(): 'LE' | 'BE'
 
