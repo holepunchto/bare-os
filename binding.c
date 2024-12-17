@@ -4,6 +4,8 @@
 #include <stdlib.h>
 #include <utf.h>
 #include <uv.h>
+#include <unistd.h>
+#include <pwd.h>
 
 static uv_rwlock_t bare_os_env_lock;
 
@@ -113,6 +115,62 @@ bare_os_pid (js_env_t *env, js_callback_info_t *info) {
 
   js_value_t *result;
   err = js_create_uint32(env, uv_os_getpid(), &result);
+  if (err < 0) return NULL;
+
+  return result;
+}
+
+
+static js_value_t *
+bare_os_userinfo (js_env_t *env, js_callback_info_t *info) {
+  int err;
+
+  uid_t uid = getuid();
+  struct passwd *pwd = getpwuid(uid);
+
+  if (pwd == NULL) {
+      js_throw_error(env, "Error", "Could not retrieve user info");
+      return NULL;
+  }
+
+  js_value_t *result;
+  err = js_create_object(env, &result);
+  if (err < 0) return NULL;
+
+  // Create and set the username property
+  js_value_t *username_value;
+  err = js_create_string_utf8(env, (utf8_t *)pwd->pw_name, -1, &username_value);
+  if (err < 0) return NULL;
+  err = js_set_named_property(env, result, "username", username_value);
+  if (err < 0) return NULL;
+
+
+  // Create and set the uid property
+  js_value_t *uid_value;
+  err = js_create_uint32(env, (uint32_t)pwd->pw_uid, &uid_value);
+  if (err < 0) return NULL;
+  err = js_set_named_property(env, result, "uid", uid_value);
+  if (err < 0) return NULL;
+
+  // Create and set the gid property
+  js_value_t *gid_value;
+  err = js_create_uint32(env, (uint32_t)pwd->pw_gid, &gid_value);
+    if (err < 0) return NULL;
+  err = js_set_named_property(env, result, "gid", gid_value);
+  if (err < 0) return NULL;
+
+  // Create and set the homedir property
+  js_value_t *homedir_value;
+  err = js_create_string_utf8(env, (utf8_t *)pwd->pw_dir, -1, &homedir_value);
+  if (err < 0) return NULL;
+  err = js_set_named_property(env, result, "homedir", homedir_value);
+  if (err < 0) return NULL;
+
+  // Create and set the shell property
+  js_value_t *shell_value;
+  err = js_create_string_utf8(env, (utf8_t *)pwd->pw_shell, -1, &shell_value);
+  if (err < 0) return NULL;
+  err = js_set_named_property(env, result, "shell", shell_value);
   if (err < 0) return NULL;
 
   return result;
@@ -790,6 +848,7 @@ bare_os_exports (js_env_t *env, js_value_t *exports) {
   V("hasEnv", bare_os_get_env)
   V("setEnv", bare_os_set_env)
   V("unsetEnv", bare_os_unset_env)
+  V("userInfo", bare_os_userinfo)
 #undef V
 
   const union {

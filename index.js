@@ -9,7 +9,7 @@ exports.EOL = binding.platform === 'win32' ? '\r\n' : '\n'
 exports.platform = function platform() {
   return binding.platform
 }
-
+console.log(binding)
 exports.arch = function arch() {
   return binding.arch
 }
@@ -26,6 +26,7 @@ exports.chdir = binding.chdir
 exports.tmpdir = binding.tmpdir
 exports.homedir = binding.homedir
 exports.hostname = binding.hostname
+exports.userInfo = binding.userInfo
 
 exports.kill = function kill(pid, signal = constants.signals.SIGTERM) {
   if (typeof signal === 'string') {
