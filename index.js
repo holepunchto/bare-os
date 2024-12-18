@@ -9,7 +9,7 @@ exports.EOL = binding.platform === 'win32' ? '\r\n' : '\n'
 exports.platform = function platform() {
   return binding.platform
 }
-console.log(binding)
+
 exports.arch = function arch() {
   return binding.arch
 }
