@@ -96,3 +96,8 @@ test('uptime', (t) => {
 test('load avg', (t) => {
   t.comment(os.loadavg())
 })
+
+test('user info', (t) => {
+  t.comment(os.userInfo())
+})
+

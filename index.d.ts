@@ -91,3 +91,5 @@ export function hasEnv(name: string): boolean
 export function setEnv(name: string, value: string): void
 
 export function unsetEnv(name: string): void
+
+export function userInfo(name: string) : string
