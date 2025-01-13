@@ -78,6 +78,18 @@ export function uptime(): number
 
 export function loadavg(): ArrayLike<number>
 
+export function cpus(): {
+  model: string
+  speed: number
+  times: {
+    user: number
+    nice: number
+    sys: number
+    idle: number
+    irq: number
+  }
+}[]
+
 export function getProcessTitle(): string
 
 export function setProcessTitle(title: unknown): void
