@@ -472,6 +472,72 @@ bare_os_loadavg (js_env_t *env, js_callback_info_t *info) {
 }
 
 static js_value_t *
+bare_os_cpus (js_env_t *env, js_callback_info_t *info) {
+  int err;
+
+  uv_cpu_info_t *cpus;
+  int len;
+  err = uv_cpu_info(&cpus, &len);
+  if (err < 0) {
+    js_throw_error(env, uv_err_name(err), uv_strerror(err));
+    return NULL;
+  }
+
+  js_value_t *result;
+  err = js_create_array_with_length(env, len, &result);
+  assert(err == 0);
+
+  for (uint32_t i = 0, n = len; i < n; i++) {
+    uv_cpu_info_t cpu = cpus[i];
+
+    js_value_t *item;
+    err = js_create_object(env, &item);
+    assert(err == 0);
+
+    err = js_set_element(env, result, i, item);
+    assert(err == 0);
+
+#define V(name, type, ...) \
+  { \
+    js_value_t *val; \
+    err = type(env, ##__VA_ARGS__, &val); \
+    assert(err == 0); \
+    err = js_set_named_property(env, item, name, val); \
+    assert(err == 0); \
+  }
+
+    V("model", js_create_string_utf8, (const utf8_t *) cpu.model, -1)
+    V("speed", js_create_double, cpu.speed)
+    V("times", js_create_object)
+#undef V
+
+    js_value_t *times;
+    err = js_get_named_property(env, item, "times", &times);
+    assert(err == 0);
+
+#define V(name) \
+  { \
+    js_value_t *val; \
+    err = js_create_int64(env, cpu.cpu_times.name, &val); \
+    assert(err == 0); \
+    err = js_set_named_property(env, times, #name, val); \
+    assert(err == 0); \
+  }
+
+    V(user)
+    V(nice)
+    V(sys)
+    V(idle)
+    V(irq)
+#undef V
+  }
+
+  uv_free_cpu_info(cpus, len);
+
+  return result;
+}
+
+static js_value_t *
 bare_os_get_process_title (js_env_t *env, js_callback_info_t *info) {
   int err;
 
@@ -783,6 +849,7 @@ bare_os_exports (js_env_t *env, js_value_t *exports) {
   V("totalmem", bare_os_totalmem)
   V("uptime", bare_os_uptime)
   V("loadavg", bare_os_loadavg)
+  V("cpus", bare_os_cpus)
   V("getProcessTitle", bare_os_get_process_title)
   V("setProcessTitle", bare_os_set_process_title)
   V("getEnvKeys", bare_os_get_env_keys)

@@ -64,6 +64,7 @@ exports.freemem = binding.freemem
 exports.totalmem = binding.totalmem
 exports.uptime = binding.uptime
 exports.loadavg = binding.loadavg
+exports.cpus = binding.cpus
 
 exports.getProcessTitle = binding.getProcessTitle
 

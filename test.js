@@ -96,3 +96,7 @@ test('uptime', (t) => {
 test('load avg', (t) => {
   t.comment(os.loadavg())
 })
+
+test('cpus', (t) => {
+  t.comment(os.cpus())
+})
