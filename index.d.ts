@@ -39,10 +39,14 @@ export function endianness(): 'LE' | 'BE'
 
 export function availableParallelism(): number
 
-export function cpuUsage(previous?: { user: number; system: number }): {
+export interface CpuUsage {
   user: number
   system: number
 }
+
+export function cpuUsage(previous?: CpuUsage): CpuUsage
+
+export function threadCpuUsage(previous?: CpuUsage): CpuUsage
 
 export function resourceUsage(): {
   userCPUTime: number
