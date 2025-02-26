@@ -306,6 +306,37 @@ bare_os_cpu_usage (js_env_t *env, js_callback_info_t *info) {
 }
 
 static js_value_t *
+bare_os_cpu_usage_thread (js_env_t *env, js_callback_info_t *info) {
+  int err;
+
+  uv_rusage_t usage;
+  err = uv_getrusage_thread(&usage);
+  assert(err == 0);
+
+  js_value_t *result;
+  err = js_create_object(env, &result);
+  assert(err == 0);
+
+#define V(name, property) \
+  { \
+    uv_timeval_t time = usage.ru_##property; \
+\
+    js_value_t *value; \
+    err = js_create_int64(env, time.tv_sec * 1e6 + time.tv_usec, &value); \
+    assert(err == 0); \
+\
+    err = js_set_named_property(env, result, name, value); \
+    assert(err == 0); \
+  }
+
+  V("user", utime)
+  V("system", stime)
+#undef V
+
+  return result;
+}
+
+static js_value_t *
 bare_os_resource_usage (js_env_t *env, js_callback_info_t *info) {
   int err;
 
@@ -843,6 +874,7 @@ bare_os_exports (js_env_t *env, js_value_t *exports) {
   V("kill", bare_os_kill)
   V("availableParallelism", bare_os_available_parallelism)
   V("cpuUsage", bare_os_cpu_usage)
+  V("threadCpuUsage", bare_os_cpu_usage_thread)
   V("resourceUsage", bare_os_resource_usage)
   V("memoryUsage", bare_os_memory_usage)
   V("freemem", bare_os_freemem)

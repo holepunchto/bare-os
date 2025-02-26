@@ -58,6 +58,19 @@ exports.cpuUsage = function cpuUsage(previous) {
   return current
 }
 
+exports.threadCpuUsage = function threadCpuUsage(previous) {
+  const current = binding.threadCpuUsage()
+
+  if (previous) {
+    return {
+      user: current.user - previous.user,
+      system: current.system - previous.system
+    }
+  }
+
+  return current
+}
+
 exports.resourceUsage = binding.resourceUsage
 exports.memoryUsage = binding.memoryUsage
 exports.freemem = binding.freemem

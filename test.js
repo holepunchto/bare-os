@@ -73,6 +73,10 @@ test('cpu usage', (t) => {
   t.comment(os.cpuUsage())
 })
 
+test('thread cpu usage', (t) => {
+  t.comment(os.threadCpuUsage())
+})
+
 test('resource usage', (t) => {
   t.comment(os.resourceUsage())
 })
