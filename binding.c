@@ -428,7 +428,7 @@ bare_os_memory_usage (js_env_t *env, js_callback_info_t *info) {
 
 #define V(name, property) \
   { \
-    if (stats.property != (size_t) - 1) { \
+    if (stats.property != (size_t) -1) { \
       js_value_t *value; \
       err = js_create_int64(env, stats.property, &value); \
       assert(err == 0); \
