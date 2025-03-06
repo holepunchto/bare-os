@@ -28,7 +28,7 @@ bare_os_type(js_env_t *env, js_callback_info_t *info) {
 
   js_value_t *result;
   err = js_create_string_utf8(env, (utf8_t *) buffer.sysname, -1, &result);
-  if (err < 0) return NULL;
+  assert(err == 0);
 
   return result;
 }
@@ -46,7 +46,7 @@ bare_os_version(js_env_t *env, js_callback_info_t *info) {
 
   js_value_t *result;
   err = js_create_string_utf8(env, (utf8_t *) buffer.version, -1, &result);
-  if (err < 0) return NULL;
+  assert(err == 0);
 
   return result;
 }
@@ -64,7 +64,7 @@ bare_os_release(js_env_t *env, js_callback_info_t *info) {
 
   js_value_t *result;
   err = js_create_string_utf8(env, (utf8_t *) buffer.release, -1, &result);
-  if (err < 0) return NULL;
+  assert(err == 0);
 
   return result;
 }
@@ -82,7 +82,7 @@ bare_os_machine(js_env_t *env, js_callback_info_t *info) {
 
   js_value_t *result;
   err = js_create_string_utf8(env, (utf8_t *) buffer.machine, -1, &result);
-  if (err < 0) return NULL;
+  assert(err == 0);
 
   return result;
 }
@@ -102,7 +102,7 @@ bare_os_exec_path(js_env_t *env, js_callback_info_t *info) {
 
   js_value_t *result;
   err = js_create_string_utf8(env, (utf8_t *) exec_path, len, &result);
-  if (err < 0) return NULL;
+  assert(err == 0);
 
   return result;
 }
@@ -113,7 +113,7 @@ bare_os_pid(js_env_t *env, js_callback_info_t *info) {
 
   js_value_t *result;
   err = js_create_uint32(env, uv_os_getpid(), &result);
-  if (err < 0) return NULL;
+  assert(err == 0);
 
   return result;
 }
@@ -124,7 +124,7 @@ bare_os_ppid(js_env_t *env, js_callback_info_t *info) {
 
   js_value_t *result;
   err = js_create_uint32(env, uv_os_getppid(), &result);
-  if (err < 0) return NULL;
+  assert(err == 0);
 
   return result;
 }
@@ -144,7 +144,7 @@ bare_os_cwd(js_env_t *env, js_callback_info_t *info) {
 
   js_value_t *result;
   err = js_create_string_utf8(env, (utf8_t *) cwd, len, &result);
-  if (err < 0) return NULL;
+  assert(err == 0);
 
   return result;
 }
@@ -189,7 +189,7 @@ bare_os_tmpdir(js_env_t *env, js_callback_info_t *info) {
 
   js_value_t *result;
   err = js_create_string_utf8(env, (utf8_t *) tmpdir, len, &result);
-  if (err < 0) return NULL;
+  assert(err == 0);
 
   return result;
 }
@@ -209,7 +209,7 @@ bare_os_homedir(js_env_t *env, js_callback_info_t *info) {
 
   js_value_t *result;
   err = js_create_string_utf8(env, (utf8_t *) homedir, len, &result);
-  if (err < 0) return NULL;
+  assert(err == 0);
 
   return result;
 }
@@ -229,7 +229,7 @@ bare_os_hostname(js_env_t *env, js_callback_info_t *info) {
 
   js_value_t *result;
   err = js_create_string_utf8(env, (utf8_t *) hostname, len, &result);
-  if (err < 0) return NULL;
+  assert(err == 0);
 
   return result;
 }
