@@ -235,6 +235,67 @@ bare_os_hostname(js_env_t *env, js_callback_info_t *info) {
 }
 
 static js_value_t *
+bare_os_user_info(js_env_t *env, js_callback_info_t *info) {
+  int err;
+
+  uv_passwd_t pwd;
+  err = uv_os_get_passwd(&pwd);
+  if (err != 0) {
+    js_throw_error(env, uv_err_name(err), uv_strerror(err));
+    return NULL;
+  }
+
+  js_value_t *result;
+  err = js_create_object(env, &result);
+  assert(err == 0);
+
+  js_value_t *uid;
+  err = js_create_int32(env, (int32_t) pwd.uid, &uid);
+  assert(err == 0);
+
+  err = js_set_named_property(env, result, "uid", uid);
+  assert(err == 0);
+
+  js_value_t *gid;
+  err = js_create_int32(env, (int32_t) pwd.gid, &gid);
+  assert(err == 0);
+
+  err = js_set_named_property(env, result, "gid", gid);
+  assert(err == 0);
+
+  js_value_t *username;
+  err = js_create_string_utf8(env, (utf8_t *) pwd.username, strlen(pwd.username), &username);
+  assert(err == 0);
+
+  err = js_set_named_property(env, result, "username", username);
+  assert(err == 0);
+
+  js_value_t *homedir;
+  err = js_create_string_utf8(env, (utf8_t *) pwd.homedir, strlen(pwd.homedir), &homedir);
+  assert(err == 0);
+
+  err = js_set_named_property(env, result, "homedir", homedir);
+  assert(err == 0);
+
+  js_value_t *shell;
+
+  if (pwd.shell == NULL) {
+    err = js_get_null(env, &shell);
+    assert(err == 0);
+  } else {
+    err = js_create_string_utf8(env, (utf8_t *) pwd.shell, -1, &shell);
+    assert(err == 0);
+  }
+
+  err = js_set_named_property(env, result, "shell", shell);
+  assert(err == 0);
+
+  uv_os_free_passwd(&pwd);
+
+  return result;
+}
+
+static js_value_t *
 bare_os_kill(js_env_t *env, js_callback_info_t *info) {
   int err;
 
@@ -889,6 +950,7 @@ bare_os_exports(js_env_t *env, js_value_t *exports) {
   V("hasEnv", bare_os_get_env)
   V("setEnv", bare_os_set_env)
   V("unsetEnv", bare_os_unset_env)
+  V("userInfo", bare_os_user_info)
 #undef V
 
   const union {
