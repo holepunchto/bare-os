@@ -250,14 +250,14 @@ bare_os_user_info(js_env_t *env, js_callback_info_t *info) {
   assert(err == 0);
 
   js_value_t *uid;
-  err = js_create_uint32(env, pwd.uid, &uid);
+  err = js_create_int32(env, pwd.uid, &uid);
   assert(err == 0);
 
   err = js_set_named_property(env, result, "uid", uid);
   assert(err == 0);
 
   js_value_t *gid;
-  err = js_create_uint32(env, pwd.gid, &gid);
+  err = js_create_int32(env, pwd.gid, &gid);
   assert(err == 0);
 
   err = js_set_named_property(env, result, "gid", gid);
