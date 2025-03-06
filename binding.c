@@ -235,7 +235,7 @@ bare_os_hostname(js_env_t *env, js_callback_info_t *info) {
 }
 
 static js_value_t *
-bare_os_userinfo(js_env_t *env, js_callback_info_t *info) {
+bare_os_user_info(js_env_t *env, js_callback_info_t *info) {
   int err;
 
   uv_passwd_t pwd;
@@ -950,7 +950,7 @@ bare_os_exports(js_env_t *env, js_value_t *exports) {
   V("hasEnv", bare_os_get_env)
   V("setEnv", bare_os_set_env)
   V("unsetEnv", bare_os_unset_env)
-  V("userInfo", bare_os_userinfo)
+  V("userInfo", bare_os_user_info)
 #undef V
 
   const union {
