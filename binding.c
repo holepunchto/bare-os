@@ -5,10 +5,7 @@
 #include <utf.h>
 #include <uv.h>
 
-#ifdef _WIN32
-#include <windows.h>
-#include <lmcons.h>
-#else
+#ifndef _WIN32
 #include <unistd.h>
 #include <pwd.h>
 #endif
@@ -250,6 +247,13 @@ bare_os_userinfo (js_env_t *env, js_callback_info_t *info) {
   if (err < 0) return NULL;
 
   #ifdef _WIN32
+  uv_passwd_t pwd;
+  err = uv_os_get_passwd(&pwd);
+  if (err != 0) {
+      js_throw_error(env, "Error", "Could not retrieve user info");
+      return NULL;
+  }
+
   js_value_t *uid_value;
   err = js_create_int32(env, (int32_t)-1, &uid_value);
   if (err < 0) return NULL;
@@ -263,26 +267,25 @@ bare_os_userinfo (js_env_t *env, js_callback_info_t *info) {
   if (err < 0) return NULL;
 
   js_value_t *username_value;
-  char username[UNLEN + 1] = {0};
-  DWORD username_len = UNLEN + 1;
-  err = GetUserNameA(username, &username_len);
-  if (err < 0) return NULL;
-  err = js_create_string_utf8(env, (utf8_t *) username, username_len, &username_value);
+  err = js_create_string_utf8(env, (utf8_t *) pwd.username, strlen(pwd.username), &username_value);
   if (err < 0) return NULL;
   err = js_set_named_property(env, result, "username", username_value);
   if (err < 0) return NULL;
 
-  js_value_t *home_dir;
-  home_dir = bare_os_homedir(env, info);
-  err = js_set_named_property(env, result, "homedir", home_dir);
+  js_value_t *home_dir_value;
+  err = js_create_string_utf8(env, (utf8_t *) pwd.homedir, strlen(pwd.homedir), &home_dir_value);
+  if (err < 0) return NULL;
+  err = js_set_named_property(env, result, "homedir", home_dir_value);
   if (err < 0) return NULL;
 
   js_value_t *shell_value;
-  err = js_get_null(env ,&shell_value);
+  err = js_get_null(env, &shell_value);
   if (err < 0) return NULL;
   err = js_set_named_property(env, result, "shell", shell_value);
   if (err < 0) return NULL;
 
+  uv_os_free_passwd(&pwd);
+  return result;
   #else
 
   uid_t uid = getuid();
