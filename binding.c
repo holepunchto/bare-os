@@ -5,6 +5,14 @@
 #include <utf.h>
 #include <uv.h>
 
+#ifdef _WIN32
+#include <windows.h>
+#include <lmcons.h>
+#else
+#include <unistd.h>
+#include <pwd.h>
+#endif
+
 static uv_rwlock_t bare_os_env_lock;
 
 static uv_once_t bare_os_env_lock_guard = UV_ONCE_INIT;
@@ -233,6 +241,92 @@ bare_os_hostname(js_env_t *env, js_callback_info_t *info) {
 
   return result;
 }
+
+static js_value_t *
+bare_os_userinfo (js_env_t *env, js_callback_info_t *info) {
+  int err;
+  js_value_t *result;
+  err = js_create_object(env, &result);
+  if (err < 0) return NULL;
+
+  #ifdef _WIN32
+  js_value_t *uid_value;
+  err = js_create_int32(env, (int32_t)-1, &uid_value);
+  if (err < 0) return NULL;
+  err = js_set_named_property(env, result, "uid", uid_value);
+  if (err < 0) return NULL;
+
+  js_value_t *gid_value;
+  err = js_create_int32(env, (int32_t)-1, &gid_value);
+  if (err < 0) return NULL;
+  err = js_set_named_property(env, result, "gid", gid_value);
+  if (err < 0) return NULL;
+
+  js_value_t *username_value;
+  char username[UNLEN + 1] = {0};
+  DWORD username_len = UNLEN + 1;
+  err = GetUserNameA(username, &username_len);
+  if (err < 0) return NULL;
+  err = js_create_string_utf8(env, (utf8_t *) username, username_len, &username_value);
+  if (err < 0) return NULL;
+  err = js_set_named_property(env, result, "username", username_value);
+  if (err < 0) return NULL;
+
+  js_value_t *home_dir;
+  home_dir = bare_os_homedir(env, info);
+  err = js_set_named_property(env, result, "homedir", home_dir);
+  if (err < 0) return NULL;
+
+  js_value_t *shell_value;
+  err = js_get_null(env ,&shell_value);
+  if (err < 0) return NULL;
+  err = js_set_named_property(env, result, "shell", shell_value);
+  if (err < 0) return NULL;
+
+  #else
+
+  uid_t uid = getuid();
+  struct passwd *pwd = getpwuid(uid);
+
+  if (pwd == NULL) {
+      js_throw_error(env, "Error", "Could not retrieve user info");
+      return NULL;
+  }
+
+  js_value_t *username_value;
+  err = js_create_string_utf8(env, (utf8_t *)pwd->pw_name, -1, &username_value);
+  if (err < 0) return NULL;
+  err = js_set_named_property(env, result, "username", username_value);
+  if (err < 0) return NULL;
+
+  js_value_t *uid_value;
+  err = js_create_uint32(env, (uint32_t)pwd->pw_uid, &uid_value);
+  if (err < 0) return NULL;
+  err = js_set_named_property(env, result, "uid", uid_value);
+  if (err < 0) return NULL;
+
+  js_value_t *gid_value;
+  err = js_create_uint32(env, (uint32_t)pwd->pw_gid, &gid_value);
+    if (err < 0) return NULL;
+  err = js_set_named_property(env, result, "gid", gid_value);
+  if (err < 0) return NULL;
+
+  js_value_t *homedir_value;
+  err = js_create_string_utf8(env, (utf8_t *)pwd->pw_dir, -1, &homedir_value);
+  if (err < 0) return NULL;
+  err = js_set_named_property(env, result, "homedir", homedir_value);
+  if (err < 0) return NULL;
+
+  js_value_t *shell_value;
+  err = js_create_string_utf8(env, (utf8_t *)pwd->pw_shell, -1, &shell_value);
+  if (err < 0) return NULL;
+  err = js_set_named_property(env, result, "shell", shell_value);
+  if (err < 0) return NULL;
+  #endif
+
+  return result;
+}
+
 
 static js_value_t *
 bare_os_kill(js_env_t *env, js_callback_info_t *info) {
@@ -889,6 +983,7 @@ bare_os_exports(js_env_t *env, js_value_t *exports) {
   V("hasEnv", bare_os_get_env)
   V("setEnv", bare_os_set_env)
   V("unsetEnv", bare_os_unset_env)
+  V("userInfo", bare_os_userinfo)
 #undef V
 
   const union {

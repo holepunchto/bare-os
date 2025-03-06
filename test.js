@@ -104,3 +104,7 @@ test('load avg', (t) => {
 test('cpus', (t) => {
   t.comment(os.cpus())
 })
+
+test('user info', (t) => {
+  t.comment(os.userInfo())
+})
