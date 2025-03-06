@@ -241,7 +241,6 @@ bare_os_userinfo (js_env_t *env, js_callback_info_t *info) {
   err = js_create_object(env, &result);
   if (err < 0) return NULL;
 
-//   #ifdef _WIN32
   uv_passwd_t pwd;
   err = uv_os_get_passwd(&pwd);
   if (err != 0) {
