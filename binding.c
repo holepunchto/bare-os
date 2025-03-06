@@ -10,13 +10,13 @@ static uv_rwlock_t bare_os_env_lock;
 static uv_once_t bare_os_env_lock_guard = UV_ONCE_INIT;
 
 static void
-bare_os__on_env_lock_init (void) {
+bare_os__on_env_lock_init(void) {
   int err = uv_rwlock_init(&bare_os_env_lock);
   assert(err == 0);
 }
 
 static js_value_t *
-bare_os_type (js_env_t *env, js_callback_info_t *info) {
+bare_os_type(js_env_t *env, js_callback_info_t *info) {
   int err;
 
   uv_utsname_t buffer;
@@ -34,7 +34,7 @@ bare_os_type (js_env_t *env, js_callback_info_t *info) {
 }
 
 static js_value_t *
-bare_os_version (js_env_t *env, js_callback_info_t *info) {
+bare_os_version(js_env_t *env, js_callback_info_t *info) {
   int err;
 
   uv_utsname_t buffer;
@@ -52,7 +52,7 @@ bare_os_version (js_env_t *env, js_callback_info_t *info) {
 }
 
 static js_value_t *
-bare_os_release (js_env_t *env, js_callback_info_t *info) {
+bare_os_release(js_env_t *env, js_callback_info_t *info) {
   int err;
 
   uv_utsname_t buffer;
@@ -70,7 +70,7 @@ bare_os_release (js_env_t *env, js_callback_info_t *info) {
 }
 
 static js_value_t *
-bare_os_machine (js_env_t *env, js_callback_info_t *info) {
+bare_os_machine(js_env_t *env, js_callback_info_t *info) {
   int err;
 
   uv_utsname_t buffer;
@@ -88,7 +88,7 @@ bare_os_machine (js_env_t *env, js_callback_info_t *info) {
 }
 
 static js_value_t *
-bare_os_exec_path (js_env_t *env, js_callback_info_t *info) {
+bare_os_exec_path(js_env_t *env, js_callback_info_t *info) {
   int err;
 
   size_t len = 4096;
@@ -108,7 +108,7 @@ bare_os_exec_path (js_env_t *env, js_callback_info_t *info) {
 }
 
 static js_value_t *
-bare_os_pid (js_env_t *env, js_callback_info_t *info) {
+bare_os_pid(js_env_t *env, js_callback_info_t *info) {
   int err;
 
   js_value_t *result;
@@ -119,7 +119,7 @@ bare_os_pid (js_env_t *env, js_callback_info_t *info) {
 }
 
 static js_value_t *
-bare_os_ppid (js_env_t *env, js_callback_info_t *info) {
+bare_os_ppid(js_env_t *env, js_callback_info_t *info) {
   int err;
 
   js_value_t *result;
@@ -130,7 +130,7 @@ bare_os_ppid (js_env_t *env, js_callback_info_t *info) {
 }
 
 static js_value_t *
-bare_os_cwd (js_env_t *env, js_callback_info_t *info) {
+bare_os_cwd(js_env_t *env, js_callback_info_t *info) {
   int err;
 
   size_t len = 4096;
@@ -150,7 +150,7 @@ bare_os_cwd (js_env_t *env, js_callback_info_t *info) {
 }
 
 static js_value_t *
-bare_os_chdir (js_env_t *env, js_callback_info_t *info) {
+bare_os_chdir(js_env_t *env, js_callback_info_t *info) {
   int err;
 
   size_t argc = 1;
@@ -175,7 +175,7 @@ bare_os_chdir (js_env_t *env, js_callback_info_t *info) {
 }
 
 static js_value_t *
-bare_os_tmpdir (js_env_t *env, js_callback_info_t *info) {
+bare_os_tmpdir(js_env_t *env, js_callback_info_t *info) {
   int err;
 
   size_t len = 4096;
@@ -195,7 +195,7 @@ bare_os_tmpdir (js_env_t *env, js_callback_info_t *info) {
 }
 
 static js_value_t *
-bare_os_homedir (js_env_t *env, js_callback_info_t *info) {
+bare_os_homedir(js_env_t *env, js_callback_info_t *info) {
   int err;
 
   size_t len = 4096;
@@ -215,7 +215,7 @@ bare_os_homedir (js_env_t *env, js_callback_info_t *info) {
 }
 
 static js_value_t *
-bare_os_hostname (js_env_t *env, js_callback_info_t *info) {
+bare_os_hostname(js_env_t *env, js_callback_info_t *info) {
   int err;
 
   size_t len = UV_MAXHOSTNAMESIZE;
@@ -235,61 +235,68 @@ bare_os_hostname (js_env_t *env, js_callback_info_t *info) {
 }
 
 static js_value_t *
-bare_os_userinfo (js_env_t *env, js_callback_info_t *info) {
+bare_os_userinfo(js_env_t *env, js_callback_info_t *info) {
   int err;
-  js_value_t *result;
-  err = js_create_object(env, &result);
-  assert(err == 0);
 
   uv_passwd_t pwd;
   err = uv_os_get_passwd(&pwd);
   if (err != 0) {
-    uv_os_free_passwd(&pwd);
-    js_throw_error(env, "Error", "Could not retrieve user info");
+    js_throw_error(env, uv_err_name(err), uv_strerror(err));
     return NULL;
   }
 
-  js_value_t *uid_value;
-  err = js_create_int32(env, (int32_t) pwd.uid, &uid_value);
-  assert(err == 0);
-  err = js_set_named_property(env, result, "uid", uid_value);
+  js_value_t *result;
+  err = js_create_object(env, &result);
   assert(err == 0);
 
-  js_value_t *gid_value;
-  err = js_create_int32(env, (int32_t) pwd.gid, &gid_value);
-  assert(err == 0);
-  err = js_set_named_property(env, result, "gid", gid_value);
+  js_value_t *uid;
+  err = js_create_int32(env, (int32_t) pwd.uid, &uid);
   assert(err == 0);
 
-  js_value_t *username_value;
-  err = js_create_string_utf8(env, (utf8_t *) pwd.username, strlen(pwd.username), &username_value);
-  assert(err == 0);
-  err = js_set_named_property(env, result, "username", username_value);
+  err = js_set_named_property(env, result, "uid", uid);
   assert(err == 0);
 
-  js_value_t *home_dir_value;
-  err = js_create_string_utf8(env, (utf8_t *) pwd.homedir, strlen(pwd.homedir), &home_dir_value);
-  assert(err == 0);
-  err = js_set_named_property(env, result, "homedir", home_dir_value);
+  js_value_t *gid;
+  err = js_create_int32(env, (int32_t) pwd.gid, &gid);
   assert(err == 0);
 
-  js_value_t *shell_value;
+  err = js_set_named_property(env, result, "gid", gid);
+  assert(err == 0);
+
+  js_value_t *username;
+  err = js_create_string_utf8(env, (utf8_t *) pwd.username, strlen(pwd.username), &username);
+  assert(err == 0);
+
+  err = js_set_named_property(env, result, "username", username);
+  assert(err == 0);
+
+  js_value_t *homedir;
+  err = js_create_string_utf8(env, (utf8_t *) pwd.homedir, strlen(pwd.homedir), &homedir);
+  assert(err == 0);
+
+  err = js_set_named_property(env, result, "homedir", homedir);
+  assert(err == 0);
+
+  js_value_t *shell;
+
   if (pwd.shell == NULL) {
-    err = js_get_null(env, &shell_value);
+    err = js_get_null(env, &shell);
     assert(err == 0);
   } else {
-    err = js_create_string_utf8(env, (utf8_t *) pwd.shell, -1, &shell_value);
+    err = js_create_string_utf8(env, (utf8_t *) pwd.shell, -1, &shell);
     assert(err == 0);
   }
 
-  err = js_set_named_property(env, result, "shell", shell_value);
+  err = js_set_named_property(env, result, "shell", shell);
   assert(err == 0);
+
   uv_os_free_passwd(&pwd);
+
   return result;
 }
 
 static js_value_t *
-bare_os_kill (js_env_t *env, js_callback_info_t *info) {
+bare_os_kill(js_env_t *env, js_callback_info_t *info) {
   int err;
 
   size_t argc = 2;
@@ -318,7 +325,7 @@ bare_os_kill (js_env_t *env, js_callback_info_t *info) {
 }
 
 static js_value_t *
-bare_os_available_parallelism (js_env_t *env, js_callback_info_t *info) {
+bare_os_available_parallelism(js_env_t *env, js_callback_info_t *info) {
   int err;
 
   js_value_t *result;
@@ -329,7 +336,7 @@ bare_os_available_parallelism (js_env_t *env, js_callback_info_t *info) {
 }
 
 static js_value_t *
-bare_os_cpu_usage (js_env_t *env, js_callback_info_t *info) {
+bare_os_cpu_usage(js_env_t *env, js_callback_info_t *info) {
   int err;
 
   uv_rusage_t usage;
@@ -360,7 +367,7 @@ bare_os_cpu_usage (js_env_t *env, js_callback_info_t *info) {
 }
 
 static js_value_t *
-bare_os_cpu_usage_thread (js_env_t *env, js_callback_info_t *info) {
+bare_os_cpu_usage_thread(js_env_t *env, js_callback_info_t *info) {
   int err;
 
   uv_rusage_t usage;
@@ -391,7 +398,7 @@ bare_os_cpu_usage_thread (js_env_t *env, js_callback_info_t *info) {
 }
 
 static js_value_t *
-bare_os_resource_usage (js_env_t *env, js_callback_info_t *info) {
+bare_os_resource_usage(js_env_t *env, js_callback_info_t *info) {
   int err;
 
   uv_rusage_t usage;
@@ -448,7 +455,7 @@ bare_os_resource_usage (js_env_t *env, js_callback_info_t *info) {
 }
 
 static js_value_t *
-bare_os_memory_usage (js_env_t *env, js_callback_info_t *info) {
+bare_os_memory_usage(js_env_t *env, js_callback_info_t *info) {
   int err;
 
   js_heap_statistics_t stats = {
@@ -501,7 +508,7 @@ bare_os_memory_usage (js_env_t *env, js_callback_info_t *info) {
 }
 
 static js_value_t *
-bare_os_freemem (js_env_t *env, js_callback_info_t *info) {
+bare_os_freemem(js_env_t *env, js_callback_info_t *info) {
   int err;
 
   js_value_t *result;
@@ -512,7 +519,7 @@ bare_os_freemem (js_env_t *env, js_callback_info_t *info) {
 }
 
 static js_value_t *
-bare_os_totalmem (js_env_t *env, js_callback_info_t *info) {
+bare_os_totalmem(js_env_t *env, js_callback_info_t *info) {
   int err;
 
   js_value_t *result;
@@ -523,7 +530,7 @@ bare_os_totalmem (js_env_t *env, js_callback_info_t *info) {
 }
 
 static js_value_t *
-bare_os_uptime (js_env_t *env, js_callback_info_t *info) {
+bare_os_uptime(js_env_t *env, js_callback_info_t *info) {
   int err;
 
   double uptime;
@@ -538,7 +545,7 @@ bare_os_uptime (js_env_t *env, js_callback_info_t *info) {
 }
 
 static js_value_t *
-bare_os_loadavg (js_env_t *env, js_callback_info_t *info) {
+bare_os_loadavg(js_env_t *env, js_callback_info_t *info) {
   int err;
 
   double *data;
@@ -557,7 +564,7 @@ bare_os_loadavg (js_env_t *env, js_callback_info_t *info) {
 }
 
 static js_value_t *
-bare_os_cpus (js_env_t *env, js_callback_info_t *info) {
+bare_os_cpus(js_env_t *env, js_callback_info_t *info) {
   int err;
 
   uv_cpu_info_t *cpus;
@@ -623,7 +630,7 @@ bare_os_cpus (js_env_t *env, js_callback_info_t *info) {
 }
 
 static js_value_t *
-bare_os_get_process_title (js_env_t *env, js_callback_info_t *info) {
+bare_os_get_process_title(js_env_t *env, js_callback_info_t *info) {
   int err;
 
   char title[256];
@@ -641,7 +648,7 @@ bare_os_get_process_title (js_env_t *env, js_callback_info_t *info) {
 }
 
 static js_value_t *
-bare_os_set_process_title (js_env_t *env, js_callback_info_t *info) {
+bare_os_set_process_title(js_env_t *env, js_callback_info_t *info) {
   int err;
 
   size_t argc = 1;
@@ -663,7 +670,7 @@ bare_os_set_process_title (js_env_t *env, js_callback_info_t *info) {
 }
 
 static js_value_t *
-bare_os_get_env_keys (js_env_t *env, js_callback_info_t *info) {
+bare_os_get_env_keys(js_env_t *env, js_callback_info_t *info) {
   int err;
 
   uv_env_item_t *items;
@@ -701,7 +708,7 @@ bare_os_get_env_keys (js_env_t *env, js_callback_info_t *info) {
 }
 
 static js_value_t *
-bare_os_get_env (js_env_t *env, js_callback_info_t *info) {
+bare_os_get_env(js_env_t *env, js_callback_info_t *info) {
   int err;
 
   size_t argc = 1;
@@ -759,7 +766,7 @@ bare_os_get_env (js_env_t *env, js_callback_info_t *info) {
 }
 
 static js_value_t *
-bare_os_has_env (js_env_t *env, js_callback_info_t *info) {
+bare_os_has_env(js_env_t *env, js_callback_info_t *info) {
   int err;
 
   size_t argc = 1;
@@ -802,7 +809,7 @@ bare_os_has_env (js_env_t *env, js_callback_info_t *info) {
 }
 
 static js_value_t *
-bare_os_set_env (js_env_t *env, js_callback_info_t *info) {
+bare_os_set_env(js_env_t *env, js_callback_info_t *info) {
   int err;
 
   size_t argc = 2;
@@ -849,7 +856,7 @@ bare_os_set_env (js_env_t *env, js_callback_info_t *info) {
 }
 
 static js_value_t *
-bare_os_unset_env (js_env_t *env, js_callback_info_t *info) {
+bare_os_unset_env(js_env_t *env, js_callback_info_t *info) {
   int err;
 
   size_t argc = 1;
@@ -886,7 +893,7 @@ bare_os_unset_env (js_env_t *env, js_callback_info_t *info) {
 }
 
 static js_value_t *
-bare_os_exports (js_env_t *env, js_value_t *exports) {
+bare_os_exports(js_env_t *env, js_value_t *exports) {
   uv_once(&bare_os_env_lock_guard, bare_os__on_env_lock_init);
 
   int err;
