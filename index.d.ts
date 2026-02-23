@@ -1,6 +1,7 @@
 export const constants: {
   signals: Record<string, number>
   errnos: Record<string, number>
+  priority: Record<string, number>
 }
 
 export const EOL: '\r\n' | '\n'
@@ -97,6 +98,11 @@ export function cpus(): {
 export function getProcessTitle(): string
 
 export function setProcessTitle(title: unknown): void
+
+export function getPriority(pid?: number): number
+
+export function setPriority(priority: number): void
+export function setPriority(pid: number, priority: number): void
 
 export function getEnvKeys(): string[]
 
