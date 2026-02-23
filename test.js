@@ -64,7 +64,7 @@ test('process title', (t) => {
 test('priority', (t) => {
   t.plan(2)
 
-  const priority = os.constants.priority.UV_PRIORITY_BELOW_NORMAL
+  const priority = os.constants.priority.PRIORITY_BELOW_NORMAL
 
   t.ok(priority > 0)
 

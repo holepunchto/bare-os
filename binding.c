@@ -1183,18 +1183,18 @@ bare_os_exports(js_env_t *env, js_value_t *exports) {
 #define V(name) \
   { \
     js_value_t *val; \
-    err = js_create_int32(env, name, &val); \
+    err = js_create_int32(env, UV_##name, &val); \
     assert(err == 0); \
     err = js_set_named_property(env, priority, #name, val); \
     assert(err == 0); \
   }
 
-  V(UV_PRIORITY_LOW);
-  V(UV_PRIORITY_BELOW_NORMAL);
-  V(UV_PRIORITY_NORMAL);
-  V(UV_PRIORITY_ABOVE_NORMAL);
-  V(UV_PRIORITY_HIGH);
-  V(UV_PRIORITY_HIGHEST);
+  V(PRIORITY_LOW);
+  V(PRIORITY_BELOW_NORMAL);
+  V(PRIORITY_NORMAL);
+  V(PRIORITY_ABOVE_NORMAL);
+  V(PRIORITY_HIGH);
+  V(PRIORITY_HIGHEST);
 
   return exports;
 }
