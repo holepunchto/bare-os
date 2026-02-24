@@ -34,6 +34,18 @@ export function homedir(): string
 
 export function hostname(): string
 
+export interface NetworkInterface {
+  address: string
+  netmask: string
+  family: 'IPv4' | 'IPv6'
+  cidr: string
+  mac: string
+  internal: false
+  scopeid?: number
+}
+
+export function networkInterfaces(): Record<string, NetworkInterface[]>
+
 export function kill(pid: number, signal?: string | number): void
 
 export function endianness(): 'LE' | 'BE'
