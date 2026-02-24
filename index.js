@@ -92,6 +92,19 @@ exports.setProcessTitle = function setProcessTitle(title) {
   binding.setProcessTitle(title)
 }
 
+exports.getPriority = function getPriority(pid = 0) {
+  return binding.getPriority(pid)
+}
+
+exports.setPriority = function setPriority(pid, priority) {
+  if (priority === undefined) {
+    priority = pid
+    pid = 0
+  }
+
+  binding.setPriority(pid, priority)
+}
+
 exports.getEnvKeys = binding.getEnvKeys
 exports.getEnv = binding.getEnv
 exports.hasEnv = binding.hasEnv

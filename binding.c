@@ -670,6 +670,64 @@ bare_os_set_process_title(js_env_t *env, js_callback_info_t *info) {
 }
 
 static js_value_t *
+bare_os_get_priority(js_env_t *env, js_callback_info_t *info) {
+  int err;
+
+  size_t argc = 1;
+  js_value_t *argv[1];
+
+  err = js_get_callback_info(env, info, &argc, argv, NULL, NULL);
+  assert(err == 0);
+
+  assert(argc == 1);
+
+  uv_pid_t pid;
+  err = js_get_value_int32(env, argv[0], &pid);
+  assert(err == 0);
+
+  int priority;
+  err = uv_os_getpriority(pid, &priority);
+  if (err < 0) {
+    js_throw_error(env, uv_err_name(err), uv_strerror(err));
+    return NULL;
+  }
+
+  js_value_t *result;
+  err = js_create_int32(env, priority, &result);
+  assert(err == 0);
+
+  return result;
+}
+
+static js_value_t *
+bare_os_set_priority(js_env_t *env, js_callback_info_t *info) {
+  int err;
+
+  size_t argc = 2;
+  js_value_t *argv[2];
+
+  err = js_get_callback_info(env, info, &argc, argv, NULL, NULL);
+  assert(err == 0);
+
+  assert(argc == 2);
+
+  uv_pid_t pid;
+  err = js_get_value_int32(env, argv[0], &pid);
+  assert(err == 0);
+
+  int priority;
+  err = js_get_value_int32(env, argv[1], &priority);
+  assert(err == 0);
+
+  err = uv_os_setpriority(pid, priority);
+  if (err < 0) {
+    js_throw_error(env, uv_err_name(err), uv_strerror(err));
+  }
+
+  return NULL;
+}
+
+static js_value_t *
 bare_os_get_env_keys(js_env_t *env, js_callback_info_t *info) {
   int err;
 
@@ -945,6 +1003,8 @@ bare_os_exports(js_env_t *env, js_value_t *exports) {
   V("cpus", bare_os_cpus)
   V("getProcessTitle", bare_os_get_process_title)
   V("setProcessTitle", bare_os_set_process_title)
+  V("getPriority", bare_os_get_priority)
+  V("setPriority", bare_os_set_priority)
   V("getEnvKeys", bare_os_get_env_keys)
   V("getEnv", bare_os_get_env)
   V("hasEnv", bare_os_get_env)
@@ -1112,6 +1172,29 @@ bare_os_exports(js_env_t *env, js_value_t *exports) {
 
   UV_ERRNO_MAP(V);
 #undef V
+
+  js_value_t *priority;
+  err = js_create_object(env, &priority);
+  assert(err == 0);
+
+  err = js_set_named_property(env, exports, "priority", priority);
+  assert(err == 0);
+
+#define V(name) \
+  { \
+    js_value_t *val; \
+    err = js_create_int32(env, UV_##name, &val); \
+    assert(err == 0); \
+    err = js_set_named_property(env, priority, #name, val); \
+    assert(err == 0); \
+  }
+
+  V(PRIORITY_LOW);
+  V(PRIORITY_BELOW_NORMAL);
+  V(PRIORITY_NORMAL);
+  V(PRIORITY_ABOVE_NORMAL);
+  V(PRIORITY_HIGH);
+  V(PRIORITY_HIGHEST);
 
   return exports;
 }

@@ -61,6 +61,18 @@ test('process title', (t) => {
   t.comment(os.getProcessTitle())
 })
 
+test('priority', (t) => {
+  t.plan(2)
+
+  const priority = os.constants.priority.PRIORITY_BELOW_NORMAL
+
+  t.ok(priority > 0)
+
+  os.setPriority(priority)
+
+  t.is(os.getPriority(), priority)
+})
+
 test('endianness', (t) => {
   t.comment(os.endianness())
 })
