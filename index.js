@@ -28,6 +28,19 @@ exports.homedir = binding.homedir
 exports.hostname = binding.hostname
 exports.userInfo = binding.userInfo
 
+exports.networkInterfaces = function networkInterfaces() {
+  const interfaces = binding.networkInterfaces()
+
+  return interfaces.reduce((result, entry) => {
+    const { name, ...interface } = entry
+
+    if (result[name]) result[name].push(interface)
+    else result[name] = [interface]
+
+    return result
+  }, {})
+}
+
 exports.kill = function kill(pid, signal = constants.signals.SIGTERM) {
   if (typeof signal === 'string') {
     if (signal in constants.signals === false) {
