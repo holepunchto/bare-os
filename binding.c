@@ -326,7 +326,7 @@ bare_os_network_interfaces(js_env_t *env, js_callback_info_t *info) {
   for (size_t i = 0, n = len; i < n; i++) {
     uv_interface_address_t address = addresses[i];
 
-    sa_family_t family = address.address.address4.sin_family;
+    uint32_t family = address.address.address4.sin_family;
 
     if (family != AF_INET && family != AF_INET6) {
       continue;
