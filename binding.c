@@ -295,6 +295,160 @@ bare_os_user_info(js_env_t *env, js_callback_info_t *info) {
   return result;
 }
 
+static int
+bare_os__population_count(uint32_t num) {
+  int result = 0;
+
+  while (num != 0) {
+    result++;
+    num &= num - 1;
+  }
+
+  return result;
+}
+
+static js_value_t *
+bare_os_network_interfaces(js_env_t *env, js_callback_info_t *info) {
+  int err;
+
+  uv_interface_address_t *addresses;
+  int len;
+  err = uv_interface_addresses(&addresses, &len);
+  if (err < 0) {
+    js_throw_error(env, uv_err_name(err), uv_strerror(err));
+    return NULL;
+  }
+
+  js_value_t *result;
+  err = js_create_array_with_length(env, len, &result);
+  assert(err == 0);
+
+  for (size_t i = 0, n = len; i < n; i++) {
+    uv_interface_address_t address = addresses[i];
+
+    uint32_t family = address.address.address4.sin_family;
+
+    if (family != AF_INET && family != AF_INET6) {
+      continue;
+    }
+
+    js_value_t *item;
+    err = js_create_object(env, &item);
+    assert(err == 0);
+
+    js_value_t *val;
+
+    err = js_create_string_utf8(env, (utf8_t *) address.name, -1, &val);
+    assert(err == 0);
+
+    err = js_set_named_property(env, item, "name", val);
+    assert(err == 0);
+
+    char address_ip[INET6_ADDRSTRLEN];
+    char netmask_ip[INET6_ADDRSTRLEN];
+    char family_string[5];
+
+    char cidr[INET6_ADDRSTRLEN + 8];
+    uint32_t cidr_value = 0;
+
+    if (family == AF_INET) {
+      err = uv_ip4_name(&address.address.address4, address_ip, sizeof(address_ip));
+      assert(err == 0);
+
+      err = uv_ip4_name(&address.netmask.netmask4, netmask_ip, sizeof(netmask_ip));
+      assert(err == 0);
+
+      strcpy(family_string, "IPv4");
+
+      cidr_value = bare_os__population_count(address.netmask.netmask4.sin_addr.s_addr);
+    } else {
+      err = uv_ip6_name(&address.address.address6, address_ip, sizeof(address_ip));
+      assert(err == 0);
+
+      err = uv_ip6_name(&address.netmask.netmask6, netmask_ip, sizeof(netmask_ip));
+      assert(err == 0);
+
+      strcpy(family_string, "IPv6");
+
+      for (size_t i = 0; i < 16; i++) {
+        uint32_t count = bare_os__population_count(address.netmask.netmask6.sin6_addr.s6_addr[i]);
+
+        if (count == 0) break;
+
+        cidr_value += count;
+      }
+    }
+
+    err = js_create_string_utf8(env, (utf8_t *) address_ip, -1, &val);
+    assert(err == 0);
+
+    err = js_set_named_property(env, item, "address", val);
+    assert(err == 0);
+
+    err = js_create_string_utf8(env, (utf8_t *) netmask_ip, -1, &val);
+    assert(err == 0);
+
+    err = js_set_named_property(env, item, "netmask", val);
+    assert(err == 0);
+
+    err = js_create_string_utf8(env, (utf8_t *) family_string, -1, &val);
+    assert(err == 0);
+
+    err = js_set_named_property(env, item, "family", val);
+    assert(err == 0);
+
+    err = sprintf(cidr, "%s/%d", address_ip, cidr_value);
+    assert(err > 0);
+
+    err = js_create_string_utf8(env, (utf8_t *) cidr, -1, &val);
+    assert(err == 0);
+
+    err = js_set_named_property(env, item, "cidr", val);
+    assert(err == 0);
+
+    char mac[18];
+    err = snprintf(
+      mac,
+      sizeof(mac),
+      "%02x:%02x:%02x:%02x:%02x:%02x",
+      (unsigned char) address.phys_addr[0],
+      (unsigned char) address.phys_addr[1],
+      (unsigned char) address.phys_addr[2],
+      (unsigned char) address.phys_addr[3],
+      (unsigned char) address.phys_addr[4],
+      (unsigned char) address.phys_addr[5]
+    );
+    assert(err > 0);
+
+    err = js_create_string_utf8(env, (utf8_t *) mac, -1, &val);
+    assert(err == 0);
+
+    err = js_set_named_property(env, item, "mac", val);
+    assert(err == 0);
+
+    err = js_get_boolean(env, address.is_internal == 1, &val);
+    assert(err == 0);
+
+    err = js_set_named_property(env, item, "internal", val);
+    assert(err == 0);
+
+    if (family == AF_INET6) {
+      err = js_create_uint32(env, address.address.address6.sin6_scope_id, &val);
+      assert(err == 0);
+
+      err = js_set_named_property(env, item, "scopeid", val);
+      assert(err == 0);
+    }
+
+    err = js_set_element(env, result, i, item);
+    assert(err == 0);
+  }
+
+  uv_free_interface_addresses(addresses, len);
+
+  return result;
+}
+
 static js_value_t *
 bare_os_kill(js_env_t *env, js_callback_info_t *info) {
   int err;
@@ -1011,6 +1165,7 @@ bare_os_exports(js_env_t *env, js_value_t *exports) {
   V("setEnv", bare_os_set_env)
   V("unsetEnv", bare_os_unset_env)
   V("userInfo", bare_os_user_info)
+  V("networkInterfaces", bare_os_network_interfaces)
 #undef V
 
   const union {

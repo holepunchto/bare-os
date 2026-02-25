@@ -120,3 +120,7 @@ test('cpus', (t) => {
 test('user info', (t) => {
   t.comment(os.userInfo())
 })
+
+test('network interfaces', (t) => {
+  t.comment(os.networkInterfaces())
+})
