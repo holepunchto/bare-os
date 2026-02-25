@@ -48,6 +48,16 @@ export function networkInterfaces(): Record<string, NetworkInterface[]>
 
 export function kill(pid: number, signal?: string | number): void
 
+export interface UserInfo {
+  uid: number
+  gid: number
+  username: string
+  homedir: string
+  shell: string | null
+}
+
+export function userInfo(): UserInfo
+
 export function endianness(): 'LE' | 'BE'
 
 export function availableParallelism(): number
