@@ -40,7 +40,7 @@ export interface NetworkInterface {
   family: 'IPv4' | 'IPv6'
   cidr: string
   mac: string
-  internal: false
+  internal: boolean
   scopeid?: number
 }
 
