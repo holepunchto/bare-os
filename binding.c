@@ -695,6 +695,17 @@ bare_os_available_memory(js_env_t *env, js_callback_info_t *info) {
 }
 
 static js_value_t *
+bare_os_constrained_memory(js_env_t *env, js_callback_info_t *info) {
+  int err;
+
+  js_value_t *result;
+  err = js_create_int64(env, uv_get_constrained_memory(), &result);
+  assert(err == 0);
+
+  return result;
+}
+
+static js_value_t *
 bare_os_uptime(js_env_t *env, js_callback_info_t *info) {
   int err;
 
