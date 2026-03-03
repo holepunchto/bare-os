@@ -101,6 +101,10 @@ export function freemem(): number
 
 export function totalmem(): number
 
+export function availableMemory(): number
+
+export function constrainedMemory(): number
+
 export function uptime(): number
 
 export function loadavg(): ArrayLike<number>

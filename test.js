@@ -105,6 +105,14 @@ test('total memory', (t) => {
   t.comment(os.totalmem())
 })
 
+test('available memory', (t) => {
+  t.comment(os.availableMemory())
+})
+
+test('constrained memory', (t) => {
+  t.comment(os.constrainedMemory())
+})
+
 test('uptime', (t) => {
   t.comment(os.uptime())
 })

@@ -684,6 +684,28 @@ bare_os_totalmem(js_env_t *env, js_callback_info_t *info) {
 }
 
 static js_value_t *
+bare_os_available_memory(js_env_t *env, js_callback_info_t *info) {
+  int err;
+
+  js_value_t *result;
+  err = js_create_int64(env, uv_get_available_memory(), &result);
+  assert(err == 0);
+
+  return result;
+}
+
+static js_value_t *
+bare_os_constrained_memory(js_env_t *env, js_callback_info_t *info) {
+  int err;
+
+  js_value_t *result;
+  err = js_create_int64(env, uv_get_constrained_memory(), &result);
+  assert(err == 0);
+
+  return result;
+}
+
+static js_value_t *
 bare_os_uptime(js_env_t *env, js_callback_info_t *info) {
   int err;
 
@@ -1152,6 +1174,8 @@ bare_os_exports(js_env_t *env, js_value_t *exports) {
   V("memoryUsage", bare_os_memory_usage)
   V("freemem", bare_os_freemem)
   V("totalmem", bare_os_totalmem)
+  V("availableMemory", bare_os_available_memory)
+  V("constrainedMemory", bare_os_constrained_memory)
   V("uptime", bare_os_uptime)
   V("loadavg", bare_os_loadavg)
   V("cpus", bare_os_cpus)
