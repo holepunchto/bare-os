@@ -397,7 +397,7 @@ bare_os_network_interfaces(js_env_t *env, js_callback_info_t *info) {
     err = js_set_named_property(env, item, "family", val);
     assert(err == 0);
 
-    err = sprintf(cidr, "%s/%d", address_ip, cidr_value);
+    err = snprintf(cidr, sizeof(cidr), "%s/%d", address_ip, cidr_value);
     assert(err > 0);
 
     err = js_create_string_utf8(env, (utf8_t *) cidr, -1, &val);
