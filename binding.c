@@ -806,6 +806,25 @@ bare_os_cpus(js_env_t *env, js_callback_info_t *info) {
 }
 
 static js_value_t *
+bare_os_cpus_thread(js_env_t *env, js_callback_info_t *info) {
+  int err;
+
+  int cpu = uv_thread_getcpu();
+  if (cpu < 0) {
+    err = js_throw_error(env, uv_err_name(cpu), uv_strerror(cpu));
+    assert(err == 0);
+
+    return NULL;
+  }
+
+  js_value_t *result;
+  err = js_create_int32(env, cpu, &result);
+  assert(err == 0);
+
+  return result;
+}
+
+static js_value_t *
 bare_os_get_process_title(js_env_t *env, js_callback_info_t *info) {
   int err;
 
@@ -1179,6 +1198,7 @@ bare_os_exports(js_env_t *env, js_value_t *exports) {
   V("uptime", bare_os_uptime)
   V("loadavg", bare_os_loadavg)
   V("cpus", bare_os_cpus)
+  V("threadCpus", bare_os_cpus_thread)
   V("getProcessTitle", bare_os_get_process_title)
   V("setProcessTitle", bare_os_set_process_title)
   V("getPriority", bare_os_get_priority)

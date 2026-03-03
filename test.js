@@ -1,4 +1,5 @@
 const test = require('brittle')
+const { isMac } = require('which-runtime')
 const os = require('.')
 
 test('EOL', (t) => {
@@ -123,6 +124,14 @@ test('load avg', (t) => {
 
 test('cpus', (t) => {
   t.comment(os.cpus())
+})
+
+test('thread cpus', (t) => {
+  if (isMac) {
+    t.exception(() => os.threadCpus())
+  } else {
+    t.comment(os.threadCpus())
+  }
 })
 
 test('user info', (t) => {

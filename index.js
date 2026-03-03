@@ -94,6 +94,7 @@ exports.constrainedMemory = binding.constrainedMemory
 exports.uptime = binding.uptime
 exports.loadavg = binding.loadavg
 exports.cpus = binding.cpus
+exports.threadCpus = binding.threadCpus
 
 exports.getProcessTitle = binding.getProcessTitle
 

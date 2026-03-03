@@ -121,6 +121,8 @@ export function cpus(): {
   }
 }[]
 
+export function threadCpus(): number
+
 export function getProcessTitle(): string
 
 export function setProcessTitle(title: unknown): void
