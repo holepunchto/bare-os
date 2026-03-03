@@ -125,6 +125,10 @@ export function getProcessTitle(): string
 
 export function setProcessTitle(title: unknown): void
 
+export function getThreadName(): string
+
+export function setThreadName(name: unknown): void
+
 export function getPriority(pid?: number): number
 
 export function setPriority(priority: number): void

@@ -61,6 +61,12 @@ test('process title', (t) => {
   t.comment(os.getProcessTitle())
 })
 
+test('thread name', (t) => {
+  os.setThreadName('bare-test')
+
+  t.is(os.getThreadName(), 'bare-test')
+})
+
 test('priority', (t) => {
   t.plan(2)
 

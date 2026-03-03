@@ -107,6 +107,18 @@ exports.setProcessTitle = function setProcessTitle(title) {
   binding.setProcessTitle(title)
 }
 
+exports.getThreadName = binding.getThreadName
+
+exports.setThreadName = function setThreadName(name) {
+  if (typeof name !== 'string') name = name.toString()
+
+  if (name.length >= 256) {
+    throw errors.TITLE_OVERFLOW('Thread name is too long')
+  }
+
+  binding.setThreadName(name)
+}
+
 exports.getPriority = function getPriority(pid = 0) {
   return binding.getPriority(pid)
 }
