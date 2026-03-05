@@ -22,7 +22,9 @@ bare_os_type(js_env_t *env, js_callback_info_t *info) {
   uv_utsname_t buffer;
   err = uv_os_uname(&buffer);
   if (err < 0) {
-    js_throw_error(env, uv_err_name(err), uv_strerror(err));
+    err = js_throw_error(env, uv_err_name(err), uv_strerror(err));
+    assert(err == 0);
+
     return NULL;
   }
 
@@ -40,7 +42,9 @@ bare_os_version(js_env_t *env, js_callback_info_t *info) {
   uv_utsname_t buffer;
   err = uv_os_uname(&buffer);
   if (err < 0) {
-    js_throw_error(env, uv_err_name(err), uv_strerror(err));
+    err = js_throw_error(env, uv_err_name(err), uv_strerror(err));
+    assert(err == 0);
+
     return NULL;
   }
 
@@ -58,7 +62,9 @@ bare_os_release(js_env_t *env, js_callback_info_t *info) {
   uv_utsname_t buffer;
   err = uv_os_uname(&buffer);
   if (err < 0) {
-    js_throw_error(env, uv_err_name(err), uv_strerror(err));
+    err = js_throw_error(env, uv_err_name(err), uv_strerror(err));
+    assert(err == 0);
+
     return NULL;
   }
 
@@ -76,7 +82,9 @@ bare_os_machine(js_env_t *env, js_callback_info_t *info) {
   uv_utsname_t buffer;
   err = uv_os_uname(&buffer);
   if (err < 0) {
-    js_throw_error(env, uv_err_name(err), uv_strerror(err));
+    err = js_throw_error(env, uv_err_name(err), uv_strerror(err));
+    assert(err == 0);
+
     return NULL;
   }
 
@@ -96,7 +104,9 @@ bare_os_exec_path(js_env_t *env, js_callback_info_t *info) {
 
   err = uv_exepath(exec_path, &len);
   if (err < 0) {
-    js_throw_error(env, uv_err_name(err), uv_strerror(err));
+    err = js_throw_error(env, uv_err_name(err), uv_strerror(err));
+    assert(err == 0);
+
     return NULL;
   }
 
@@ -138,7 +148,9 @@ bare_os_cwd(js_env_t *env, js_callback_info_t *info) {
 
   err = uv_cwd(cwd, &len);
   if (err < 0) {
-    js_throw_error(env, uv_err_name(err), uv_strerror(err));
+    err = js_throw_error(env, uv_err_name(err), uv_strerror(err));
+    assert(err == 0);
+
     return NULL;
   }
 
@@ -167,7 +179,9 @@ bare_os_chdir(js_env_t *env, js_callback_info_t *info) {
 
   err = uv_chdir((char *) dir);
   if (err < 0) {
-    js_throw_error(env, uv_err_name(err), uv_strerror(err));
+    err = js_throw_error(env, uv_err_name(err), uv_strerror(err));
+    assert(err == 0);
+
     return NULL;
   }
 
@@ -183,7 +197,9 @@ bare_os_tmpdir(js_env_t *env, js_callback_info_t *info) {
 
   err = uv_os_tmpdir(tmpdir, &len);
   if (err < 0) {
-    js_throw_error(env, uv_err_name(err), uv_strerror(err));
+    err = js_throw_error(env, uv_err_name(err), uv_strerror(err));
+    assert(err == 0);
+
     return NULL;
   }
 
@@ -203,7 +219,9 @@ bare_os_homedir(js_env_t *env, js_callback_info_t *info) {
 
   err = uv_os_homedir(homedir, &len);
   if (err < 0) {
-    js_throw_error(env, uv_err_name(err), uv_strerror(err));
+    err = js_throw_error(env, uv_err_name(err), uv_strerror(err));
+    assert(err == 0);
+
     return NULL;
   }
 
@@ -223,7 +241,9 @@ bare_os_hostname(js_env_t *env, js_callback_info_t *info) {
 
   err = uv_os_gethostname(hostname, &len);
   if (err < 0) {
-    js_throw_error(env, uv_err_name(err), uv_strerror(err));
+    err = js_throw_error(env, uv_err_name(err), uv_strerror(err));
+    assert(err == 0);
+
     return NULL;
   }
 
@@ -241,7 +261,9 @@ bare_os_user_info(js_env_t *env, js_callback_info_t *info) {
   uv_passwd_t pwd;
   err = uv_os_get_passwd(&pwd);
   if (err != 0) {
-    js_throw_error(env, uv_err_name(err), uv_strerror(err));
+    err = js_throw_error(env, uv_err_name(err), uv_strerror(err));
+    assert(err == 0);
+
     return NULL;
   }
 
@@ -315,7 +337,9 @@ bare_os_network_interfaces(js_env_t *env, js_callback_info_t *info) {
   int len;
   err = uv_interface_addresses(&addresses, &len);
   if (err < 0) {
-    js_throw_error(env, uv_err_name(err), uv_strerror(err));
+    err = js_throw_error(env, uv_err_name(err), uv_strerror(err));
+    assert(err == 0);
+
     return NULL;
   }
 
@@ -471,7 +495,9 @@ bare_os_kill(js_env_t *env, js_callback_info_t *info) {
 
   err = uv_kill(pid, signum);
   if (err < 0) {
-    js_throw_error(env, uv_err_name(err), uv_strerror(err));
+    err = js_throw_error(env, uv_err_name(err), uv_strerror(err));
+    assert(err == 0);
+
     return NULL;
   }
 
@@ -747,7 +773,9 @@ bare_os_cpus(js_env_t *env, js_callback_info_t *info) {
   int len;
   err = uv_cpu_info(&cpus, &len);
   if (err < 0) {
-    js_throw_error(env, uv_err_name(err), uv_strerror(err));
+    err = js_throw_error(env, uv_err_name(err), uv_strerror(err));
+    assert(err == 0);
+
     return NULL;
   }
 
@@ -812,7 +840,9 @@ bare_os_get_process_title(js_env_t *env, js_callback_info_t *info) {
   char title[256];
   err = uv_get_process_title(title, 256);
   if (err < 0) {
-    js_throw_error(env, uv_err_name(err), uv_strerror(err));
+    err = js_throw_error(env, uv_err_name(err), uv_strerror(err));
+    assert(err == 0);
+
     return NULL;
   }
 
@@ -864,7 +894,9 @@ bare_os_get_priority(js_env_t *env, js_callback_info_t *info) {
   int priority;
   err = uv_os_getpriority(pid, &priority);
   if (err < 0) {
-    js_throw_error(env, uv_err_name(err), uv_strerror(err));
+    err = js_throw_error(env, uv_err_name(err), uv_strerror(err));
+    assert(err == 0);
+
     return NULL;
   }
 
@@ -897,7 +929,10 @@ bare_os_set_priority(js_env_t *env, js_callback_info_t *info) {
 
   err = uv_os_setpriority(pid, priority);
   if (err < 0) {
-    js_throw_error(env, uv_err_name(err), uv_strerror(err));
+    err = js_throw_error(env, uv_err_name(err), uv_strerror(err));
+    assert(err == 0);
+
+    return NULL;
   }
 
   return NULL;
@@ -917,7 +952,9 @@ bare_os_get_env_keys(js_env_t *env, js_callback_info_t *info) {
   uv_rwlock_rdunlock(&bare_os_env_lock);
 
   if (err < 0) {
-    js_throw_error(env, uv_err_name(err), uv_strerror(err));
+    err = js_throw_error(env, uv_err_name(err), uv_strerror(err));
+    assert(err == 0);
+
     return NULL;
   }
 
@@ -982,7 +1019,10 @@ bare_os_get_env(js_env_t *env, js_callback_info_t *info) {
       assert(err == 0);
     } else if (err < 0) {
       uv_rwlock_rdunlock(&bare_os_env_lock);
-      js_throw_error(env, uv_err_name(err), uv_strerror(err));
+
+      err = js_throw_error(env, uv_err_name(err), uv_strerror(err));
+      assert(err == 0);
+
       free(name);
       return NULL;
     }
@@ -1028,7 +1068,9 @@ bare_os_has_env(js_env_t *env, js_callback_info_t *info) {
   uv_rwlock_rdunlock(&bare_os_env_lock);
 
   if (err != 0 && err != UV_ENOENT && err != UV_ENOBUFS) {
-    js_throw_error(env, uv_err_name(err), uv_strerror(err));
+    err = js_throw_error(env, uv_err_name(err), uv_strerror(err));
+    assert(err == 0);
+
     free(name);
     return NULL;
   }
@@ -1077,7 +1119,9 @@ bare_os_set_env(js_env_t *env, js_callback_info_t *info) {
   uv_rwlock_wrunlock(&bare_os_env_lock);
 
   if (err < 0) {
-    js_throw_error(env, uv_err_name(err), uv_strerror(err));
+    err = js_throw_error(env, uv_err_name(err), uv_strerror(err));
+    assert(err == 0);
+
     free(name);
     free(value);
     return NULL;
@@ -1116,7 +1160,9 @@ bare_os_unset_env(js_env_t *env, js_callback_info_t *info) {
   uv_rwlock_wrunlock(&bare_os_env_lock);
 
   if (err < 0) {
-    js_throw_error(env, uv_err_name(err), uv_strerror(err));
+    err = js_throw_error(env, uv_err_name(err), uv_strerror(err));
+    assert(err == 0);
+
     free(name);
     return NULL;
   }
