@@ -6,6 +6,8 @@ exports.constants = constants
 
 exports.EOL = binding.platform === 'win32' ? '\r\n' : '\n'
 
+exports.devNull = binding.platform === 'win32' ? '\\\\.\\nul' : '/dev/null'
+
 exports.platform = function platform() {
   return binding.platform
 }
