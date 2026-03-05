@@ -5,6 +5,10 @@ test('EOL', (t) => {
   t.comment(os.EOL.replace('\n', '\\n').replace('\r', '\\r'))
 })
 
+test('devNull', (t) => {
+  t.comment(os.devNull)
+})
+
 test('platform', (t) => {
   t.comment(os.platform())
 })

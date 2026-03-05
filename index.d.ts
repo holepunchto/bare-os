@@ -6,6 +6,8 @@ export const constants: {
 
 export const EOL: '\r\n' | '\n'
 
+export const devNull: '\\\\.\\nul' | '/dev/null'
+
 export function platform(): 'android' | 'darwin' | 'ios' | 'linux' | 'win32'
 
 export function arch(): 'arm' | 'arm64' | 'ia32' | 'x64'
