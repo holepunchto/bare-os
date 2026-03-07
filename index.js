@@ -31,16 +31,16 @@ exports.hostname = binding.hostname
 exports.userInfo = binding.userInfo
 
 exports.networkInterfaces = function networkInterfaces() {
-  const interfaces = binding.networkInterfaces()
+  const result = {}
 
-  return interfaces.reduce((result, entry) => {
-    const { name, ...interface } = entry
+  for (const entry of binding.networkInterfaces()) {
+    const { name, ...properties } = entry
 
-    if (result[name]) result[name].push(interface)
-    else result[name] = [interface]
+    if (result[name]) result[name].push(properties)
+    else result[name] = [properties]
+  }
 
-    return result
-  }, {})
+  return result
 }
 
 exports.kill = function kill(pid, signal = constants.signals.SIGTERM) {
