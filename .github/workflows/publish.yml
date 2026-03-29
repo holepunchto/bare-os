@@ -70,5 +70,6 @@ jobs:
     needs: prebuild
     name: Publish
     steps:
+      - uses: holepunchto/actions/node-base@v1
       - uses: holepunchto/actions/download-prebuilds@v1
       - run: npm publish --ignore-scripts
