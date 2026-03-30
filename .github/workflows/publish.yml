@@ -67,6 +67,8 @@ jobs:
           upload: true
   publish:
     runs-on: ubuntu-latest
+    environment:
+      name: release
     needs: prebuild
     name: Publish
     steps:
