@@ -68,7 +68,7 @@ jobs:
   publish:
     runs-on: ubuntu-latest
     environment:
-      name: release
+      name: npm
     needs: prebuild
     name: Publish
     steps:
