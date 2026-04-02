@@ -1,7 +1,7 @@
 {
   "name": "bare-os",
   "version": "3.8.7",
-  "description": "Operating system utilities for Javascript",
+  "description": "Operating system utilities for Bare",
   "exports": {
     ".": {
       "types": "./index.d.ts",
