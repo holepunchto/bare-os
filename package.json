@@ -1,6 +1,6 @@
 {
   "name": "bare-os",
-  "version": "3.8.7",
+  "version": "3.8.7-0",
   "description": "Operating system utilities for Bare",
   "exports": {
     ".": {
