@@ -133,6 +133,10 @@ test('user info', (t) => {
   t.comment(os.userInfo())
 })
 
+test('group info', (t) => {
+  t.comment(os.groupInfo())
+})
+
 test('network interfaces', (t) => {
   t.comment(os.networkInterfaces())
 })

@@ -60,6 +60,14 @@ export interface UserInfo {
 
 export function userInfo(): UserInfo
 
+export interface GroupInfo {
+  groupname: string
+  gid: number
+  members: string[]
+}
+
+export function groupInfo(gid?: number): GroupInfo
+
 export function endianness(): 'LE' | 'BE'
 
 export function availableParallelism(): number
