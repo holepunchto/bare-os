@@ -66,7 +66,7 @@ export interface GroupInfo {
   members: string[]
 }
 
-export function groupInfo(gid?: number): GroupInfo
+export function groupInfo(gid?: number): GroupInfo | null
 
 export function endianness(): 'LE' | 'BE'
 
