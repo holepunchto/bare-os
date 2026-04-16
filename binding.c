@@ -954,16 +954,17 @@ bare_os_group_info(js_env_t *env, js_callback_info_t *info) {
   err = js_get_value_uint32(env, argv[0], &gid);
   assert(err == 0);
 
+  js_value_t *result;
+
   uv_group_t group;
   err = uv_os_get_group(&group, gid);
   if (err != 0) {
-    err = js_throw_error(env, uv_err_name(err), uv_strerror(err));
+    err = js_get_null(env, &result);
     assert(err == 0);
 
-    return NULL;
+    return result;
   }
 
-  js_value_t *result;
   err = js_create_object(env, &result);
   assert(err == 0);
 

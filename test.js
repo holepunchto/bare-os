@@ -1,5 +1,4 @@
 const test = require('brittle')
-const { isWindows } = require('which-runtime')
 const os = require('.')
 
 test('EOL', (t) => {
@@ -135,11 +134,7 @@ test('user info', (t) => {
 })
 
 test('group info', (t) => {
-  if (isWindows) {
-    t.exception(() => os.groupInfo(), /operation not supported/)
-  } else {
-    t.comment(os.groupInfo())
-  }
+  t.comment(os.groupInfo())
 })
 
 test('network interfaces', (t) => {
