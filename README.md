@@ -125,6 +125,14 @@ Returns information about the current user. The returned object has the followin
 - `homedir` - The home directory.
 - `shell` - The shell, or `null` if unavailable.
 
+#### `const info = os.groupInfo([gid])`
+
+Returns information about a group. The `gid` value defaults to the current user group. The returned object has the following properties:
+
+- `groupname` - The group name.
+- `gid` - The group ID.
+- `members` - List with the names of group members.
+
 #### `const e = os.endianness()`
 
 Returns `'LE'` on little-endian systems and `'BE'` on big-endian systems.

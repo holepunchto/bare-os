@@ -939,6 +939,79 @@ bare_os_set_priority(js_env_t *env, js_callback_info_t *info) {
 }
 
 static js_value_t *
+bare_os_group_info(js_env_t *env, js_callback_info_t *info) {
+  int err;
+
+  size_t argc = 1;
+  js_value_t *argv[1];
+
+  err = js_get_callback_info(env, info, &argc, argv, NULL, NULL);
+  assert(err == 0);
+
+  assert(argc == 1);
+
+  uint32_t gid;
+  err = js_get_value_uint32(env, argv[0], &gid);
+  assert(err == 0);
+
+  js_value_t *result;
+
+  uv_group_t group;
+  err = uv_os_get_group(&group, gid);
+
+  if (err == UV_ENOTSUP) {
+    err = js_get_null(env, &result);
+    assert(err == 0);
+
+    return result;
+  }
+
+  if (err != 0) {
+    err = js_throw_error(env, uv_err_name(err), uv_strerror(err));
+    assert(err == 0);
+
+    return NULL;
+  }
+
+  err = js_create_object(env, &result);
+  assert(err == 0);
+
+  js_value_t *groupname;
+  err = js_create_string_utf8(env, (utf8_t *) group.groupname, strlen(group.groupname), &groupname);
+  assert(err == 0);
+
+  err = js_set_named_property(env, result, "groupname", groupname);
+  assert(err == 0);
+
+  js_value_t *grp_gid;
+  err = js_create_int32(env, group.gid, &grp_gid);
+  assert(err == 0);
+
+  err = js_set_named_property(env, result, "gid", grp_gid);
+  assert(err == 0);
+
+  js_value_t *members;
+  err = js_create_array(env, &members);
+  assert(err == 0);
+
+  for (uint32_t i = 0; group.members[i] != NULL; i++) {
+    js_value_t *member;
+    err = js_create_string_utf8(env, (utf8_t *) group.members[i], strlen(group.members[i]), &member);
+    assert(err == 0);
+
+    err = js_set_element(env, members, i, member);
+    assert(err == 0);
+  }
+
+  err = js_set_named_property(env, result, "members", members);
+  assert(err == 0);
+
+  uv_os_free_group(&group);
+
+  return result;
+}
+
+static js_value_t *
 bare_os_get_env_keys(js_env_t *env, js_callback_info_t *info) {
   int err;
 
@@ -1236,6 +1309,7 @@ bare_os_exports(js_env_t *env, js_value_t *exports) {
   V("unsetEnv", bare_os_unset_env)
   V("userInfo", bare_os_user_info)
   V("networkInterfaces", bare_os_network_interfaces)
+  V("groupInfo", bare_os_group_info)
 #undef V
 
   const union {
