@@ -958,11 +958,17 @@ bare_os_group_info(js_env_t *env, js_callback_info_t *info) {
 
   uv_group_t group;
   err = uv_os_get_group(&group, gid);
-  if (err != 0) {
+
+  if (err == UV_ENOTSUP) {
     err = js_get_null(env, &result);
+    return result;
+  }
+
+  if (err != 0) {
+    err = js_throw_error(env, uv_err_name(err), uv_strerror(err));
     assert(err == 0);
 
-    return result;
+    return NULL;
   }
 
   err = js_create_object(env, &result);
