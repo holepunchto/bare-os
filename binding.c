@@ -961,6 +961,8 @@ bare_os_group_info(js_env_t *env, js_callback_info_t *info) {
 
   if (err == UV_ENOTSUP) {
     err = js_get_null(env, &result);
+    assert(err == 0);
+
     return result;
   }
 
