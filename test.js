@@ -130,11 +130,15 @@ test('cpus', (t) => {
 })
 
 test('user info', (t) => {
-  t.comment(os.userInfo())
+  const defaultInfo = os.userInfo()
+
+  t.alike(os.userInfo(defaultInfo.uid), defaultInfo)
 })
 
 test('group info', (t) => {
-  t.comment(os.groupInfo())
+  const defaultInfo = os.groupInfo()
+
+  t.alike(os.groupInfo(defaultInfo.gid), defaultInfo)
 })
 
 test('network interfaces', (t) => {

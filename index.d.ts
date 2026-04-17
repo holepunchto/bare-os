@@ -58,7 +58,7 @@ export interface UserInfo {
   shell: string | null
 }
 
-export function userInfo(): UserInfo
+export function userInfo(uid?: number): UserInfo
 
 export interface GroupInfo {
   groupname: string

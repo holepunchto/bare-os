@@ -28,7 +28,12 @@ exports.chdir = binding.chdir
 exports.tmpdir = binding.tmpdir
 exports.homedir = binding.homedir
 exports.hostname = binding.hostname
-exports.userInfo = binding.userInfo
+
+exports.userInfo = function userInfo(uid) {
+  if (typeof uid === 'object') uid = undefined // For Node.js compatibility
+
+  return binding.userInfo(uid)
+}
 
 exports.groupInfo = function groupInfo(gid) {
   if (gid === undefined) gid = exports.userInfo().gid
