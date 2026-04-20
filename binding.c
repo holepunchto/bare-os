@@ -952,15 +952,11 @@ bare_os_group_info(js_env_t *env, js_callback_info_t *info) {
   err = js_get_callback_info(env, info, &argc, argv, NULL, NULL);
   assert(err == 0);
 
-  bool gid_undefined;
-  if (argc == 0) {
-    gid_undefined = true;
-  } else {
-    assert(argc == 1);
+  assert(argc == 0 || argc == 1);
 
-    err = js_is_undefined(env, argv[0], &gid_undefined);
-    assert(err == 0);
-  }
+  bool gid_undefined;
+  err = js_is_undefined(env, argv[0], &gid_undefined);
+  assert(err == 0);
 
   int32_t gid;
   if (gid_undefined) {
