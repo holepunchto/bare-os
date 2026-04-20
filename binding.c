@@ -264,7 +264,7 @@ bare_os_user_info(js_env_t *env, js_callback_info_t *info) {
   err = js_get_callback_info(env, info, &argc, argv, NULL, NULL);
   assert(err == 0);
 
-  assert(argc == 1);
+  assert(argc == 0 || argc == 1);
 
   bool uid_undefined;
   err = js_is_undefined(env, argv[0], &uid_undefined);
