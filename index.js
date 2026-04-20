@@ -31,8 +31,6 @@ exports.hostname = binding.hostname
 exports.userInfo = binding.userInfo
 
 exports.groupInfo = function groupInfo(gid) {
-  if (gid === undefined) gid = exports.userInfo().gid
-
   return binding.groupInfo(gid)
 }
 

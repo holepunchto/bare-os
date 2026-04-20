@@ -127,7 +127,7 @@ Returns information about the current user. The returned object has the followin
 
 #### `const info = os.groupInfo([gid])`
 
-Returns information about a group. The `gid` value defaults to the current user group. The returned object has the following properties:
+Returns information about a group. The `gid` value defaults to the effective group ID of the calling process. The returned object has the following properties:
 
 - `groupname` - The group name.
 - `gid` - The group ID.
