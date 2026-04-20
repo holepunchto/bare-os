@@ -29,10 +29,7 @@ exports.tmpdir = binding.tmpdir
 exports.homedir = binding.homedir
 exports.hostname = binding.hostname
 exports.userInfo = binding.userInfo
-
-exports.groupInfo = function groupInfo(gid) {
-  return binding.groupInfo(gid)
-}
+exports.groupInfo = binding.groupInfo
 
 exports.networkInterfaces = function networkInterfaces() {
   const result = {}
