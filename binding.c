@@ -5,6 +5,10 @@
 #include <utf.h>
 #include <uv.h>
 
+#if !defined(BARE_PLATFORM_WIN32)
+#include <unistd.h> // getegid
+#endif
+
 static uv_rwlock_t bare_os_env_lock;
 
 static uv_once_t bare_os_env_lock_guard = UV_ONCE_INIT;
@@ -969,11 +973,23 @@ bare_os_group_info(js_env_t *env, js_callback_info_t *info) {
   err = js_get_callback_info(env, info, &argc, argv, NULL, NULL);
   assert(err == 0);
 
-  assert(argc == 1);
+  assert(argc == 0 || argc == 1);
 
-  uint32_t gid;
-  err = js_get_value_uint32(env, argv[0], &gid);
+  bool gid_undefined;
+  err = js_is_undefined(env, argv[0], &gid_undefined);
   assert(err == 0);
+
+  int32_t gid;
+  if (gid_undefined) {
+#if defined(BARE_PLATFORM_WIN32)
+    gid = -1;
+#else
+    gid = getegid();
+#endif
+  } else {
+    err = js_get_value_int32(env, argv[0], &gid);
+    assert(err == 0);
+  }
 
   js_value_t *result;
 
