@@ -258,8 +258,29 @@ static js_value_t *
 bare_os_user_info(js_env_t *env, js_callback_info_t *info) {
   int err;
 
+  size_t argc = 1;
+  js_value_t *argv[1];
+
+  err = js_get_callback_info(env, info, &argc, argv, NULL, NULL);
+  assert(err == 0);
+
+  assert(argc == 0 || argc == 1);
+
+  bool uid_undefined;
+  err = js_is_undefined(env, argv[0], &uid_undefined);
+  assert(err == 0);
+
   uv_passwd_t pwd;
-  err = uv_os_get_passwd(&pwd);
+  if (uid_undefined) {
+    err = uv_os_get_passwd(&pwd);
+  } else {
+    uint32_t uid;
+    err = js_get_value_uint32(env, argv[0], &uid);
+    assert(err == 0);
+
+    err = uv_os_get_passwd2(&pwd, uid);
+  }
+
   if (err != 0) {
     err = js_throw_error(env, uv_err_name(err), uv_strerror(err));
     assert(err == 0);

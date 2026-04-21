@@ -115,9 +115,9 @@ Returns an object containing network interfaces that have been assigned a networ
 
 Sends `signal` to the process identified by `pid`. `signal` can be a string or a number. Defaults to `'SIGTERM'`.
 
-#### `const info = os.userInfo()`
+#### `const info = os.userInfo([uid])`
 
-Returns information about the current user. The returned object has the following properties:
+Returns information about a current user. The `uid` value defaults to the current effective uid. The returned object has the following properties:
 
 - `uid` - The user ID.
 - `gid` - The group ID.
