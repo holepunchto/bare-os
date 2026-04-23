@@ -1,6 +1,9 @@
 name: Prebuild
 on:
   workflow_dispatch:
+permissions:
+  actions: write
+  contents: read
 jobs:
   prebuild:
     strategy:
