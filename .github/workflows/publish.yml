@@ -4,8 +4,7 @@ on:
     tags:
       - v*
 permissions:
-  id-token: write
-  contents: write
+  contents: read
 jobs:
   prebuild:
     strategy:
@@ -71,6 +70,9 @@ jobs:
       name: npm
     needs: prebuild
     name: Publish
+    permissions:
+      id-token: write
+      contents: write
     steps:
       - uses: holepunchto/actions/node-base@v1
       - uses: holepunchto/actions/download-prebuilds@v1
