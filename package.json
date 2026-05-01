@@ -3,11 +3,11 @@
   "version": "3.9.0",
   "description": "Operating system utilities for Bare",
   "exports": {
+    "./package": "./package.json",
     ".": {
       "types": "./index.d.ts",
       "default": "./index.js"
     },
-    "./package": "./package.json",
     "./constants": "./lib/constants.js",
     "./errors": "./lib/errors.js"
   },
