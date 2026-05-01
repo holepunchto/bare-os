@@ -1,8 +1,7 @@
-export const constants: {
-  signals: Record<string, number>
-  errnos: Record<string, number>
-  priority: Record<string, number>
-}
+import constants from './lib/constants'
+import errors from './lib/errors'
+
+export { constants, errors }
 
 export const EOL: '\r\n' | '\n'
 

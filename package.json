@@ -8,8 +8,14 @@
       "types": "./index.d.ts",
       "default": "./index.js"
     },
-    "./constants": "./lib/constants.js",
-    "./errors": "./lib/errors.js"
+    "./constants": {
+       "types": "./lib/constants.d.ts",
+       "default": "./lib/constants.js"
+    },
+    "./errors": {
+       "types": "./lib/errors.d.ts",
+       "default": "./lib/errors.js"
+    }
   },
   "files": [
     "index.js",
