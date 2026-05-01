@@ -3,6 +3,7 @@ const errors = require('./lib/errors')
 const constants = require('./lib/constants')
 
 exports.constants = constants
+exports.errors = errors
 
 exports.EOL = binding.platform === 'win32' ? '\r\n' : '\n'
 
