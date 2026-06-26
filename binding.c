@@ -1134,6 +1134,8 @@ bare_os_get_env(js_env_t *env, js_callback_info_t *info) {
       assert(err == 0);
 
       free(name);
+      free(value);
+
       return NULL;
     }
 
