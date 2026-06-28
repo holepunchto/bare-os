@@ -146,3 +146,21 @@ test('group info', (t) => {
 test('network interfaces', (t) => {
   t.comment(os.networkInterfaces())
 })
+
+test('has env', (t) => {
+  t.plan(5)
+
+  const key = '__BARE_OS_TEST_ENV__'
+
+  t.is(os.hasEnv(key), false)
+  t.is(os.getEnv(key), undefined)
+
+  os.setEnv(key, 'fake_env')
+
+  t.is(os.hasEnv(key), true)
+  t.is(os.getEnv(key), 'fake_env')
+
+  os.unsetEnv(key)
+
+  t.is(os.hasEnv(key), false)
+})
