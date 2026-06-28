@@ -27,7 +27,7 @@ export function ppid(): number
 
 export function cwd(): string
 
-export function chdir(dir: string): string
+export function chdir(dir: string): void
 
 export function tmpdir(): string
 
