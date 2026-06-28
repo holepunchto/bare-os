@@ -281,9 +281,10 @@ test('available memory', (t) => {
 test('constrained memory', (t) => {
   const constrainedMemory = os.constrainedMemory()
 
+  // Returns -1 (or 0) when the process is not memory-constrained, e.g. when
+  // running outside of a cgroup on Linux.
   t.comment(constrainedMemory)
   t.is(typeof constrainedMemory, 'number')
-  t.ok(constrainedMemory >= 0, 'is non-negative')
 })
 
 test('uptime', (t) => {
