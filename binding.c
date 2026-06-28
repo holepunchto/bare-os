@@ -105,7 +105,6 @@ bare_os_exec_path(js_env_t *env, js_callback_info_t *info) {
 
   size_t len = 4096;
   char exec_path[4096];
-
   err = uv_exepath(exec_path, &len);
   if (err < 0) {
     err = js_throw_error(env, uv_err_name(err), uv_strerror(err));
@@ -149,7 +148,6 @@ bare_os_cwd(js_env_t *env, js_callback_info_t *info) {
 
   size_t len = 4096;
   char cwd[4096];
-
   err = uv_cwd(cwd, &len);
   if (err < 0) {
     err = js_throw_error(env, uv_err_name(err), uv_strerror(err));
@@ -198,7 +196,6 @@ bare_os_tmpdir(js_env_t *env, js_callback_info_t *info) {
 
   size_t len = 4096;
   char tmpdir[4096];
-
   err = uv_os_tmpdir(tmpdir, &len);
   if (err < 0) {
     err = js_throw_error(env, uv_err_name(err), uv_strerror(err));
@@ -220,7 +217,6 @@ bare_os_homedir(js_env_t *env, js_callback_info_t *info) {
 
   size_t len = 4096;
   char homedir[4096];
-
   err = uv_os_homedir(homedir, &len);
   if (err < 0) {
     err = js_throw_error(env, uv_err_name(err), uv_strerror(err));
@@ -242,7 +238,6 @@ bare_os_hostname(js_env_t *env, js_callback_info_t *info) {
 
   size_t len = UV_MAXHOSTNAMESIZE;
   char hostname[UV_MAXHOSTNAMESIZE];
-
   err = uv_os_gethostname(hostname, &len);
   if (err < 0) {
     err = js_throw_error(env, uv_err_name(err), uv_strerror(err));
