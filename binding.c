@@ -1343,7 +1343,7 @@ bare_os_exports(js_env_t *env, js_value_t *exports) {
   V("setPriority", bare_os_set_priority)
   V("getEnvKeys", bare_os_get_env_keys)
   V("getEnv", bare_os_get_env)
-  V("hasEnv", bare_os_get_env)
+  V("hasEnv", bare_os_has_env)
   V("setEnv", bare_os_set_env)
   V("unsetEnv", bare_os_unset_env)
   V("userInfo", bare_os_user_info)
