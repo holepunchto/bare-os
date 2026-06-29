@@ -1,6 +1,6 @@
 {
   "name": "bare-os",
-  "version": "3.9.2",
+  "version": "3.9.3",
   "description": "Operating system utilities for Bare",
   "exports": {
     "./package": "./package.json",
