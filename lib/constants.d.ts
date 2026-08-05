@@ -1,3 +1,4 @@
+/** An object of signal, error-number, and process-priority constants. */
 declare const constants: {
   signals: Record<string, number>
   errnos: Record<string, number>

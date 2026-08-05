@@ -19,233 +19,434 @@ console.log(os.hostname())
 console.log(os.networkInterfaces())
 ```
 
+<!-- bare-refgen:api start -->
+
 ## API
 
-#### `os.constants`
+### System and platform
 
-An object containing the following properties:
-
-- `signals` - Signal constants such as `SIGTERM` and `SIGKILL`.
-- `errnos` - Error number constants.
-- `priority` - Process priority constants.
-
-These are also available as a separate module:
-
-```js
-const constants = require('bare-os/constants')
-```
-
-#### `os.EOL`
-
-The platform-specific end-of-line marker. `'\r\n'` on Windows, `'\n'` everywhere else.
-
-#### `os.devNull`
-
-The platform-specific path to the null device. `'\\\\.\\nul'` on Windows, `'/dev/null'` everywhere else.
-
-#### `const p = os.platform()`
+#### `platform(): 'android' | 'darwin' | 'ios' | 'linux' | 'win32'`
 
 Returns the operating system platform as a string. Possible values include `'android'`, `'darwin'`, `'ios'`, `'linux'`, and `'win32'`.
 
-#### `const a = os.arch()`
+#### `arch(): 'arm' | 'arm64' | 'ia32' | 'x64'`
 
 Returns the CPU architecture as a string. Possible values include `'arm'`, `'arm64'`, `'ia32'`, and `'x64'`.
 
-#### `const t = os.type()`
+#### `type(): string`
 
 Returns the operating system name as returned by `uname(3)`.
 
-#### `const v = os.version()`
+#### `version(): string`
 
 Returns the operating system version.
 
-#### `const r = os.release()`
+#### `release(): string`
 
 Returns the operating system release.
 
-#### `const m = os.machine()`
+#### `machine(): string`
 
 Returns the machine type as a string.
 
-#### `const p = os.execPath()`
-
-Returns the absolute path of the executable that started the process.
-
-#### `const id = os.pid()`
-
-Returns the process ID.
-
-#### `const id = os.ppid()`
-
-Returns the parent process ID.
-
-#### `const dir = os.cwd()`
-
-Returns the current working directory.
-
-#### `os.chdir(dir)`
-
-Changes the current working directory to `dir`.
-
-#### `const dir = os.tmpdir()`
-
-Returns the operating system's default directory for temporary files.
-
-#### `const dir = os.homedir()`
-
-Returns the home directory of the current user.
-
-#### `const name = os.hostname()`
-
-Returns the hostname of the operating system.
-
-#### `const interfaces = os.networkInterfaces()`
-
-Returns an object containing network interfaces that have been assigned a network address. Each key on the returned object identifies a network interface. The associated value is an array of objects with the following properties:
-
-- `address` - The assigned IPv4 or IPv6 address.
-- `netmask` - The IPv4 or IPv6 network mask.
-- `family` - Either `'IPv4'` or `'IPv6'`.
-- `cidr` - The assigned IPv4 or IPv6 address with the routing prefix in CIDR notation.
-- `mac` - The MAC address of the network interface.
-- `internal` - `true` if the network interface is a loopback or similar interface that is not remotely accessible; otherwise `false`.
-- `scopeid` - The numeric IPv6 scope ID. Only specified when `family` is `'IPv6'`.
-
-#### `os.kill(pid[, signal])`
-
-Sends `signal` to the process identified by `pid`. `signal` can be a string or a number. Defaults to `'SIGTERM'`.
-
-#### `const info = os.userInfo([uid])`
-
-Returns information about a current user. The `uid` value defaults to the current effective uid. The returned object has the following properties:
-
-- `uid` - The user ID.
-- `gid` - The group ID.
-- `username` - The username.
-- `homedir` - The home directory.
-- `shell` - The shell, or `null` if unavailable.
-
-#### `const info = os.groupInfo([gid])`
-
-Returns information about a group. The `gid` value defaults to the effective group ID of the calling process. The returned object has the following properties:
-
-- `groupname` - The group name.
-- `gid` - The group ID.
-- `members` - List with the names of group members.
-
-#### `const e = os.endianness()`
+#### `endianness(): 'LE' | 'BE'`
 
 Returns `'LE'` on little-endian systems and `'BE'` on big-endian systems.
 
-#### `const n = os.availableParallelism()`
+#### `availableParallelism(): number`
 
 Returns the number of logical CPU cores available to the process.
 
-#### `const usage = os.cpuUsage([previous])`
+### Process and scheduling
 
-Returns an object with `user` and `system` properties, each representing CPU time in microseconds. If `previous` is provided, the returned values are relative to it.
+#### `pid(): number`
 
-#### `const usage = os.threadCpuUsage([previous])`
+Returns the process ID.
 
-Like `os.cpuUsage()` but for the current thread only.
+#### `ppid(): number`
 
-#### `const usage = os.resourceUsage()`
+Returns the parent process ID.
 
-Returns an object describing the resource usage of the current process. The returned object has the following properties:
+#### `cwd(): string`
 
-- `userCPUTime` - User CPU time in microseconds.
-- `systemCPUTime` - System CPU time in microseconds.
-- `maxRSS` - Maximum resident set size in bytes.
-- `sharedMemorySize` - Shared memory size.
-- `unsharedDataSize` - Unshared data size.
-- `unsharedStackSize` - Unshared stack size.
-- `minorPageFault` - Minor page faults.
-- `majorPageFault` - Major page faults.
-- `swappedOut` - Swap count.
-- `fsRead` - File system reads.
-- `fsWrite` - File system writes.
-- `ipcSent` - IPC messages sent.
-- `ipcReceived` - IPC messages received.
-- `signalsCount` - Signals received.
-- `voluntaryContextSwitches` - Voluntary context switches.
-- `involuntaryContextSwitches` - Involuntary context switches.
+Returns the current working directory.
 
-#### `const usage = os.memoryUsage()`
+#### `chdir(dir: string): void`
 
-Returns an object describing the memory usage of the process. The returned object has the following properties:
+Changes the current working directory to `dir`.
 
-- `rss` - Resident set size in bytes.
-- `heapTotal` - Total heap size in bytes.
-- `heapUsed` - Used heap size in bytes.
-- `external` - Memory usage of C++ objects bound to JavaScript objects.
+**Parameters**
 
-#### `const bytes = os.freemem()`
+| Parameter | Type     | Default | Description                                              |
+| --------- | -------- | ------- | -------------------------------------------------------- |
+| `dir`     | `string` | —       | Path of the directory to make the new working directory. |
 
-Returns the amount of free system memory in bytes.
+**Throws**
 
-#### `const bytes = os.totalmem()`
+- Thrown with the underlying system error code (for example `ENOENT`) when `dir` does not exist or cannot be entered.
 
-Returns the total amount of system memory in bytes.
+#### `execPath(): string`
 
-#### `const bytes = os.availableMemory()`
+Returns the absolute path of the executable that started the process.
 
-Returns an estimate of the amount of memory available for the process in bytes.
+#### `kill(pid: number, signal?: string | number): void`
 
-#### `const bytes = os.constrainedMemory()`
+Sends `signal` to the process identified by `pid`. `signal` can be a string or a number. Defaults to `'SIGTERM'`.
 
-Returns the amount of memory available to the process under resource constraints, such as cgroups.
+**Parameters**
 
-#### `const seconds = os.uptime()`
+| Parameter | Type               | Default | Description                                                                                                           |
+| --------- | ------------------ | ------- | --------------------------------------------------------------------------------------------------------------------- |
+| `pid`     | `number`           | —       | Process id to signal.                                                                                                 |
+| `signal?` | `string \| number` | —       | Signal name or number to send (default `'SIGTERM'`); `0` probes for the process's existence without sending a signal. |
 
-Returns the system uptime in seconds.
+**Throws**
 
-#### `const avgs = os.loadavg()`
+- `UNKNOWN_SIGNAL` — Thrown as an `OSError` when `signal` is a string that is not a recognized signal name.
+- Thrown with the underlying system error code (for example `ESRCH`) when `pid` does not identify a running process.
 
-Returns an array containing the 1, 5, and 15 minute load averages.
-
-#### `const list = os.cpus()`
-
-Returns an array of objects describing each logical CPU core. Each object has the following properties:
-
-- `model` - The CPU model.
-- `speed` - The CPU speed in MHz.
-- `times` - An object with `user`, `nice`, `sys`, `idle`, and `irq` CPU time values in milliseconds.
-
-#### `const title = os.getProcessTitle()`
+#### `getProcessTitle(): string`
 
 Returns the current process title.
 
-#### `os.setProcessTitle(title)`
+#### `setProcessTitle(title: unknown): void`
 
 Sets the process title. `title` is coerced to a string and must be shorter than 256 characters.
 
-#### `const priority = os.getPriority([pid])`
+**Parameters**
+
+| Parameter | Type      | Default | Description                                                |
+| --------- | --------- | ------- | ---------------------------------------------------------- |
+| `title`   | `unknown` | —       | New process title; coerced to a string if not already one. |
+
+**Throws**
+
+- `TITLE_OVERFLOW` — Thrown as an `OSError` when the process title is 256 characters or longer.
+
+#### `getPriority(pid?: number): number`
 
 Returns the scheduling priority of the process specified by `pid`. Defaults to `0`, meaning the current process.
 
-#### `os.setPriority([pid, ]priority)`
+**Parameters**
+
+| Parameter | Type     | Default | Description                                                 |
+| --------- | -------- | ------- | ----------------------------------------------------------- |
+| `pid?`    | `number` | —       | Process id to query; defaults to `0` (the current process). |
+
+#### `setPriority(priority: number): void`
 
 Sets the scheduling priority of the process specified by `pid`. If `pid` is omitted, the priority of the current process is set.
 
-#### `const keys = os.getEnvKeys()`
+Overloads:
+
+```ts
+setPriority(priority: number): void
+setPriority(pid: number, priority: number): void
+```
+
+**Parameters**
+
+| Parameter  | Type     | Default | Description        |
+| ---------- | -------- | ------- | ------------------ |
+| `priority` | `number` | —       | Nice value to set. |
+
+### Users and network
+
+#### `userInfo(uid?: number): UserInfo`
+
+Returns information about a current user. The `uid` value defaults to the current effective uid.
+
+**Parameters**
+
+| Parameter | Type     | Default | Description                                                |
+| --------- | -------- | ------- | ---------------------------------------------------------- |
+| `uid?`    | `number` | —       | User ID to look up; defaults to the current effective uid. |
+
+#### `groupInfo(gid?: number): GroupInfo | null`
+
+Returns information about a group. The `gid` value defaults to the effective group ID of the calling process.
+
+**Parameters**
+
+| Parameter | Type     | Default | Description                                                                     |
+| --------- | -------- | ------- | ------------------------------------------------------------------------------- |
+| `gid?`    | `number` | —       | Group ID to look up; defaults to the effective group ID of the calling process. |
+
+**Returns** `GroupInfo | null` — `null` on platforms that do not support group lookups (for example, Windows).
+
+#### `hostname(): string`
+
+Returns the hostname of the operating system.
+
+#### `networkInterfaces(): Record<string, NetworkInterface[]>`
+
+Returns an object containing network interfaces that have been assigned a network address. Each key on the returned object identifies a network interface.
+
+### Memory and CPU
+
+#### `cpus`
+
+```ts
+cpus(): {
+  model: string
+  speed: number
+  times: {
+    user: number
+    nice: number
+    sys: number
+    idle: number
+    irq: number
+  }
+}[]
+```
+
+Returns an array of objects describing each logical CPU core.
+
+#### `cpuUsage(previous?: CpuUsage): CpuUsage`
+
+Returns an object with `user` and `system` properties, each representing CPU time in microseconds. If `previous` is provided, the returned values are relative to it.
+
+**Parameters**
+
+| Parameter   | Type       | Default | Description                                                        |
+| ----------- | ---------- | ------- | ------------------------------------------------------------------ |
+| `previous?` | `CpuUsage` | —       | A previous `CpuUsage` snapshot to compute a relative diff against. |
+
+#### `threadCpuUsage(previous?: CpuUsage): CpuUsage`
+
+Like `os.cpuUsage()` but for the current thread only.
+
+**Parameters**
+
+| Parameter   | Type       | Default | Description                                                                                  |
+| ----------- | ---------- | ------- | -------------------------------------------------------------------------------------------- |
+| `previous?` | `CpuUsage` | —       | A previous `CpuUsage` snapshot (from `threadCpuUsage()`) to compute a relative diff against. |
+
+#### `resourceUsage`
+
+```ts
+resourceUsage(): {
+  userCPUTime: number
+  systemCPUTime: number
+  maxRSS: number
+  sharedMemorySize: number
+  unsharedDataSize: number
+  unsharedStackSize: number
+  minorPageFault: number
+  majorPageFault: number
+  swappedOut: number
+  fsRead: number
+  fsWrite: number
+  ipcSent: number
+  ipcReceived: number
+  signalsCount: number
+  voluntaryContextSwitches: number
+  involuntaryContextSwitches: number
+}
+```
+
+Returns an object describing the resource usage of the current process.
+
+#### `memoryUsage`
+
+```ts
+memoryUsage(): {
+  rss: number
+  heapTotal: number
+  heapUsed: number
+  external: number
+}
+```
+
+Returns an object describing the memory usage of the process.
+
+#### `freemem(): number`
+
+Returns the amount of free system memory in bytes.
+
+#### `totalmem(): number`
+
+Returns the total amount of system memory in bytes.
+
+#### `availableMemory(): number`
+
+Returns an estimate of the amount of memory available for the process in bytes.
+
+#### `constrainedMemory(): number`
+
+Returns the amount of memory available to the process under resource constraints, such as cgroups.
+
+#### `uptime(): number`
+
+Returns the system uptime in seconds.
+
+#### `loadavg(): ArrayLike<number>`
+
+Returns an array containing the 1, 5, and 15 minute load averages.
+
+### Directories
+
+#### `tmpdir(): string`
+
+Returns the operating system's default directory for temporary files.
+
+#### `homedir(): string`
+
+Returns the home directory of the current user.
+
+### Environment variables
+
+#### `getEnvKeys(): string[]`
 
 Returns an array of the names of all environment variables.
 
-#### `const value = os.getEnv(name)`
+#### `getEnv(name: string): string | undefined`
 
 Returns the value of the environment variable `name`, or `undefined` if it is not set.
 
-#### `const exists = os.hasEnv(name)`
+**Parameters**
+
+| Parameter | Type     | Default | Description                               |
+| --------- | -------- | ------- | ----------------------------------------- |
+| `name`    | `string` | —       | Name of the environment variable to read. |
+
+#### `hasEnv(name: string): boolean`
 
 Returns `true` if the environment variable `name` is set, otherwise `false`.
 
-#### `os.setEnv(name, value)`
+**Parameters**
+
+| Parameter | Type     | Default | Description                                |
+| --------- | -------- | ------- | ------------------------------------------ |
+| `name`    | `string` | —       | Name of the environment variable to check. |
+
+#### `setEnv(name: string, value: string): void`
 
 Sets the environment variable `name` to `value`.
 
-#### `os.unsetEnv(name)`
+**Parameters**
+
+| Parameter | Type     | Default | Description                                  |
+| --------- | -------- | ------- | -------------------------------------------- |
+| `name`    | `string` | —       | Name of the environment variable to set.     |
+| `value`   | `string` | —       | Value to assign to the environment variable. |
+
+#### `unsetEnv(name: string): void`
 
 Removes the environment variable `name`.
+
+**Parameters**
+
+| Parameter | Type     | Default | Description                                 |
+| --------- | -------- | ------- | ------------------------------------------- |
+| `name`    | `string` | —       | Name of the environment variable to remove. |
+
+### Constants
+
+#### `EOL: '\r\n' | '\n'`
+
+The platform-specific end-of-line marker: `'\r\n'` on Windows, `'\n'` everywhere else.
+
+#### `devNull: '\\\\.\\nul' | '/dev/null'`
+
+The platform-specific path to the null device: `'\\.\nul'` on Windows, `'/dev/null'` everywhere else.
+
+#### `constants`
+
+```ts
+constants: {
+  signals: Record<string, number>
+  errnos: Record<string, number>
+  priority: Record<string, number>
+}
+```
+
+An object of signal, error-number, and process-priority constants.
+
+#### `errors`
+
+```ts
+class errors {
+  code: string
+}
+```
+
+### Types
+
+#### `NetworkInterface`
+
+```ts
+interface NetworkInterface {
+  address: string
+  netmask: string
+  family: 'IPv4' | 'IPv6'
+  cidr: string
+  mac: string
+  internal: boolean
+  scopeid?: number
+}
+```
+
+#### `UserInfo`
+
+```ts
+interface UserInfo {
+  uid: number
+  gid: number
+  username: string
+  homedir: string
+  shell: string | null
+}
+```
+
+#### `GroupInfo`
+
+```ts
+interface GroupInfo {
+  groupname: string
+  gid: number
+  members: string[]
+}
+```
+
+#### `CpuUsage`
+
+```ts
+interface CpuUsage {
+  user: number
+  system: number
+}
+```
+
+## `bare-os/constants`
+
+### Constants and variables
+
+#### `constants.constants`
+
+```ts
+constants: {
+  signals: Record<string, number>
+  errnos: Record<string, number>
+  priority: Record<string, number>
+}
+```
+
+An object of signal, error-number, and process-priority constants.
+
+## `bare-os/errors`
+
+### Classes
+
+#### `OSError`
+
+```ts
+class OSError {
+  code: string
+}
+```
+
+<!-- bare-refgen:api end -->
 
 ## License
 
