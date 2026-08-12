@@ -21,7 +21,7 @@ console.log(os.networkInterfaces())
 
 ## API
 
-See the [full API reference](https://docs.pears.com/reference/bare/modules/bare-os).
+See the [`bare-os` reference](https://docs.pears.com/reference/bare/modules/bare-os).
 
 ## License
 
