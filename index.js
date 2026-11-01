@@ -68,13 +68,13 @@ exports.hostname = function hostname() {
 }
 
 exports.userInfo = function userInfo(uid) {
-  if (uid !== undefined) validateInteger(uid, 'User ID')
+  if (uid !== undefined) validateUint32(uid, 'User ID')
 
   return binding.userInfo(uid)
 }
 
 exports.groupInfo = function groupInfo(gid) {
-  if (gid !== undefined) validateInteger(gid, 'Group ID')
+  if (gid !== undefined) validateUint32(gid, 'Group ID')
 
   return binding.groupInfo(gid)
 }
@@ -93,7 +93,7 @@ exports.networkInterfaces = function networkInterfaces() {
 }
 
 exports.kill = function kill(pid, signal = constants.signals.SIGTERM) {
-  validateInteger(pid, 'Process ID')
+  validateInt32(pid, 'Process ID')
 
   if (typeof signal === 'string') {
     if (signal in constants.signals === false) {
@@ -102,7 +102,7 @@ exports.kill = function kill(pid, signal = constants.signals.SIGTERM) {
 
     signal = constants.signals[signal]
   } else {
-    validateInteger(signal, 'Signal')
+    validateInt32(signal, 'Signal')
   }
 
   binding.kill(pid, signal)
@@ -185,6 +185,8 @@ exports.getProcessTitle = function getProcessTitle() {
 exports.setProcessTitle = function setProcessTitle(title) {
   if (typeof title !== 'string') title = title.toString()
 
+  validateNoNullBytes(title, 'Title')
+
   if (title.length >= 256) {
     throw errors.TITLE_OVERFLOW('Process title is too long')
   }
@@ -193,7 +195,7 @@ exports.setProcessTitle = function setProcessTitle(title) {
 }
 
 exports.getPriority = function getPriority(pid = 0) {
-  validateInteger(pid, 'Process ID')
+  validateInt32(pid, 'Process ID')
 
   return binding.getPriority(pid)
 }
@@ -204,8 +206,8 @@ exports.setPriority = function setPriority(pid, priority) {
     pid = 0
   }
 
-  validateInteger(pid, 'Process ID')
-  validateInteger(priority, 'Priority')
+  validateInt32(pid, 'Process ID')
+  validateInt32(priority, 'Priority', -20, 19)
 
   binding.setPriority(pid, priority)
 }
@@ -243,10 +245,30 @@ function validateString(value, name) {
   if (typeof value !== 'string') {
     throw new TypeError(`${name} must be a string. Received type ${typeof value} (${value})`)
   }
+
+  validateNoNullBytes(value, name)
 }
 
-function validateInteger(value, name) {
+function validateNoNullBytes(value, name) {
+  if (value.includes('\0')) {
+    throw new TypeError(`${name} must be a string without null bytes`)
+  }
+}
+
+function validateInteger(value, name, min, max) {
   if (!Number.isInteger(value)) {
     throw new TypeError(`${name} must be an integer. Received type ${typeof value} (${value})`)
   }
+
+  if (value < min || value > max) {
+    throw new RangeError(`${name} must be >= ${min} && <= ${max}. Received ${value}`)
+  }
+}
+
+function validateInt32(value, name, min = -(2 ** 31), max = 2 ** 31 - 1) {
+  validateInteger(value, name, min, max)
+}
+
+function validateUint32(value, name) {
+  validateInteger(value, name, 0, 2 ** 32 - 1)
 }
