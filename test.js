@@ -118,6 +118,17 @@ test('chdir to a nonexistent directory throws', (t) => {
   t.exception(() => os.chdir('/this/path/does/not/exist'))
 })
 
+test('chdir to a path longer than the system limit throws', (t) => {
+  const cwd = os.cwd()
+
+  t.exception(() => os.chdir('a'.repeat(8192)))
+  t.is(os.cwd(), cwd, 'did not change directory')
+})
+
+test('chdir rejects null bytes', (t) => {
+  t.exception.all(() => os.chdir(os.tmpdir() + '\0junk'), TypeError)
+})
+
 test('tmpdir', (t) => {
   const tmpdir = os.tmpdir()
 
@@ -156,7 +167,19 @@ test('set process title coerces non-strings', (t) => {
 })
 
 test('set process title throws when too long', (t) => {
-  t.exception(() => os.setProcessTitle('a'.repeat(256)), /TITLE_OVERFLOW/)
+  t.exception(() => os.setProcessTitle('a'.repeat(256)), { code: 'TITLE_OVERFLOW' })
+})
+
+test('set process title with a 256 byte multibyte title', (t) => {
+  const title = os.getProcessTitle()
+
+  t.execution(() => os.setProcessTitle('\u00e9'.repeat(128)))
+
+  os.setProcessTitle(title)
+})
+
+test('set process title rejects null bytes', (t) => {
+  t.exception.all(() => os.setProcessTitle('bare\0junk'), TypeError)
 })
 
 test('priority', (t) => {
@@ -179,12 +202,37 @@ test('priority with explicit pid', (t) => {
   t.is(os.getPriority(0), priority, 'accepts an explicit pid')
 })
 
+test('priority rejects out of range values', (t) => {
+  t.exception.all(() => os.getPriority(2 ** 31), RangeError)
+  t.exception.all(() => os.setPriority(2 ** 31, 0), RangeError)
+  t.exception.all(() => os.setPriority(20), RangeError)
+  t.exception.all(() => os.setPriority(-21), RangeError)
+})
+
 test('kill with signal 0 probes an existing process', (t) => {
   t.execution(() => os.kill(os.pid(), 0))
 })
 
+test('kill with a negative process ID probes a process group', (t) => {
+  t.exception(() => os.kill(-1000000, 0))
+})
+
+test('kill rejects out of range process IDs', (t) => {
+  t.exception.all(() => os.kill(2 ** 31, 0), RangeError)
+  t.exception.all(() => os.kill(2 ** 32 - 1, 0), RangeError)
+  t.exception.all(() => os.kill(-(2 ** 31) - 1, 0), RangeError)
+})
+
+test('kill with a negative signal throws', (t) => {
+  t.exception(() => os.kill(os.pid(), -1), { code: 'EINVAL' })
+})
+
+test('kill rejects out of range signals', (t) => {
+  t.exception.all(() => os.kill(os.pid(), 2 ** 31), RangeError)
+})
+
 test('kill with an unknown signal name throws', (t) => {
-  t.exception(() => os.kill(os.pid(), 'SIGNOTAREALSIGNAL'), /UNKNOWN_SIGNAL/)
+  t.exception(() => os.kill(os.pid(), 'SIGNOTAREALSIGNAL'), { code: 'UNKNOWN_SIGNAL' })
 })
 
 test('available parallelism', (t) => {
@@ -337,6 +385,21 @@ test('user info', (t) => {
   else t.alike(os.userInfo(info.uid), info, 'looks up by uid')
 })
 
+test('user info rejects out of range uids', (t) => {
+  t.exception.all(() => os.userInfo(-1), RangeError)
+  t.exception.all(() => os.userInfo(2 ** 32), RangeError)
+})
+
+test('user info accepts uids above the signed range', (t) => {
+  try {
+    const info = os.userInfo(2 ** 32 - 2)
+
+    t.is(info.uid, 2 ** 32 - 2, 'reports the uid unsigned')
+  } catch (err) {
+    t.absent(err instanceof RangeError, 'fails only with a system error')
+  }
+})
+
 test('group info', (t) => {
   const info = os.groupInfo()
 
@@ -349,6 +412,22 @@ test('group info', (t) => {
     t.is(typeof info.gid, 'number')
     t.ok(Array.isArray(info.members), 'members is an array')
     t.alike(os.groupInfo(info.gid), info, 'looks up by gid')
+  }
+})
+
+test('group info rejects out of range gids', (t) => {
+  t.exception.all(() => os.groupInfo(-1), RangeError)
+  t.exception.all(() => os.groupInfo(2 ** 32), RangeError)
+})
+
+test('group info accepts gids above the signed range', (t) => {
+  try {
+    const info = os.groupInfo(2 ** 32 - 2)
+
+    if (info === null) t.pass('no group info available')
+    else t.is(info.gid, 2 ** 32 - 2, 'reports the gid unsigned')
+  } catch (err) {
+    t.absent(err instanceof RangeError, 'fails only with a system error')
   }
 })
 
@@ -403,6 +482,27 @@ test('set env overwrites an existing value', (t) => {
 
 test('unset env is a no-op for a missing key', (t) => {
   t.execution(() => os.unsetEnv('__BARE_OS_TEST_MISSING_ENV__'))
+})
+
+test('env rejects null bytes', (t) => {
+  const key = '__BARE_OS_TEST_ENV__'
+
+  t.exception.all(() => os.getEnv(key + '\0junk'), TypeError)
+  t.exception.all(() => os.hasEnv(key + '\0junk'), TypeError)
+  t.exception.all(() => os.setEnv(key + '\0junk', 'value'), TypeError)
+  t.exception.all(() => os.setEnv(key, 'value\0junk'), TypeError)
+  t.exception.all(() => os.unsetEnv(key + '\0junk'), TypeError)
+  t.absent(os.hasEnv(key), 'did not set the truncated key')
+})
+
+test('get env with a value longer than the initial buffer', (t) => {
+  const key = '__BARE_OS_TEST_ENV__'
+  const value = 'a'.repeat(1024)
+
+  os.setEnv(key, value)
+  t.is(os.getEnv(key), value)
+
+  os.unsetEnv(key)
 })
 
 test('env keys', (t) => {

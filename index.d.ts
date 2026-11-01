@@ -53,6 +53,7 @@ export function cwd(): string
  * @param dir - Path of the directory to make the new working directory.
  * @throws Thrown with the underlying system error code (for example `ENOENT`) when `dir` does not
  * exist or cannot be entered.
+ * @throws {TypeError} Thrown when `dir` contains a null byte.
  */
 export function chdir(dir: string): void
 
@@ -89,6 +90,7 @@ export function networkInterfaces(): Record<string, NetworkInterface[]>
  * existence without sending a signal.
  * @throws {UNKNOWN_SIGNAL} Thrown as an `OSError` when `signal` is a string that is not a
  * recognized signal name.
+ * @throws {RangeError} Thrown when `pid` or a numeric `signal` is not a 32-bit signed integer.
  * @throws Thrown with the underlying system error code (for example `ESRCH`) when `pid` does not
  * identify a running process.
  */
@@ -105,6 +107,7 @@ export interface UserInfo {
 /**
  * Returns information about a current user. The `uid` value defaults to the current effective uid.
  * @param uid - User ID to look up; defaults to the current effective uid.
+ * @throws {RangeError} Thrown when `uid` is not a 32-bit unsigned integer.
  */
 export function userInfo(uid?: number): UserInfo
 
@@ -119,6 +122,7 @@ export interface GroupInfo {
  * calling process.
  * @param gid - Group ID to look up; defaults to the effective group ID of the calling process.
  * @returns `null` on platforms that do not support group lookups (for example, Windows).
+ * @throws {RangeError} Thrown when `gid` is not a 32-bit unsigned integer.
  */
 export function groupInfo(gid?: number): GroupInfo | null
 
@@ -217,6 +221,7 @@ export function getProcessTitle(): string
  * @param title - New process title; coerced to a string if not already one.
  * @throws {TITLE_OVERFLOW} Thrown as an `OSError` when the process title is 256 characters or
  * longer.
+ * @throws {TypeError} Thrown when the process title contains a null byte.
  */
 export function setProcessTitle(title: unknown): void
 
@@ -224,6 +229,7 @@ export function setProcessTitle(title: unknown): void
  * Returns the scheduling priority of the process specified by `pid`. Defaults to `0`, meaning the
  * current process.
  * @param pid - Process id to query; defaults to `0` (the current process).
+ * @throws {RangeError} Thrown when `pid` is not a 32-bit signed integer.
  */
 export function getPriority(pid?: number): number
 
@@ -231,7 +237,9 @@ export function getPriority(pid?: number): number
  * Sets the scheduling priority of the process specified by `pid`. If `pid` is omitted, the priority
  * of the current process is set.
  * @param pid - Process id (defaults to the current process).
- * @param priority - Nice value to set.
+ * @param priority - Nice value to set, between `-20` and `19`.
+ * @throws {RangeError} Thrown when `pid` is not a 32-bit signed integer or `priority` is outside
+ * the range `-20` to `19`.
  */
 export function setPriority(priority: number): void
 export function setPriority(pid: number, priority: number): void
@@ -242,12 +250,14 @@ export function getEnvKeys(): string[]
 /**
  * Returns the value of the environment variable `name`, or `undefined` if it is not set.
  * @param name - Name of the environment variable to read.
+ * @throws {TypeError} Thrown when `name` contains a null byte.
  */
 export function getEnv(name: string): string | undefined
 
 /**
  * Returns `true` if the environment variable `name` is set, otherwise `false`.
  * @param name - Name of the environment variable to check.
+ * @throws {TypeError} Thrown when `name` contains a null byte.
  */
 export function hasEnv(name: string): boolean
 
@@ -255,11 +265,13 @@ export function hasEnv(name: string): boolean
  * Sets the environment variable `name` to `value`.
  * @param name - Name of the environment variable to set.
  * @param value - Value to assign to the environment variable.
+ * @throws {TypeError} Thrown when `name` or `value` contains a null byte.
  */
 export function setEnv(name: string, value: string): void
 
 /**
  * Removes the environment variable `name`.
  * @param name - Name of the environment variable to remove.
+ * @throws {TypeError} Thrown when `name` contains a null byte.
  */
 export function unsetEnv(name: string): void

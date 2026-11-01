@@ -1,7 +1,9 @@
 #include <assert.h>
 #include <bare.h>
 #include <js.h>
+#include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <utf.h>
 #include <uv.h>
 
@@ -17,6 +19,21 @@ static void
 bare_os__on_env_lock_init(void) {
   int err = uv_rwlock_init(&bare_os_env_lock);
   assert(err == 0);
+}
+
+static utf8_t *
+bare_os__get_string(js_env_t *env, js_value_t *value) {
+  int err;
+
+  size_t len;
+  err = js_get_value_string_utf8(env, value, NULL, 0, &len);
+  assert(err == 0);
+
+  utf8_t *str = malloc(len + 1);
+  err = js_get_value_string_utf8(env, value, str, len + 1, NULL);
+  assert(err == 0);
+
+  return str;
 }
 
 static js_value_t *
@@ -175,11 +192,12 @@ bare_os_chdir(js_env_t *env, js_callback_info_t *info) {
 
   assert(argc == 1);
 
-  utf8_t dir[4096];
-  err = js_get_value_string_utf8(env, argv[0], dir, 4096, NULL);
-  assert(err == 0);
+  utf8_t *dir = bare_os__get_string(env, argv[0]);
 
   err = uv_chdir((char *) dir);
+
+  free(dir);
+
   if (err < 0) {
     err = js_throw_error(env, uv_err_name(err), uv_strerror(err));
     assert(err == 0);
@@ -292,14 +310,23 @@ bare_os_user_info(js_env_t *env, js_callback_info_t *info) {
   assert(err == 0);
 
   js_value_t *uid;
-  err = js_create_int32(env, pwd.uid, &uid);
+  js_value_t *gid;
+
+#if defined(BARE_PLATFORM_WIN32)
+  err = js_create_int32(env, (int32_t) pwd.uid, &uid);
   assert(err == 0);
+
+  err = js_create_int32(env, (int32_t) pwd.gid, &gid);
+  assert(err == 0);
+#else
+  err = js_create_uint32(env, pwd.uid, &uid);
+  assert(err == 0);
+
+  err = js_create_uint32(env, pwd.gid, &gid);
+  assert(err == 0);
+#endif
 
   err = js_set_named_property(env, result, "uid", uid);
-  assert(err == 0);
-
-  js_value_t *gid;
-  err = js_create_int32(env, pwd.gid, &gid);
   assert(err == 0);
 
   err = js_set_named_property(env, result, "gid", gid);
@@ -364,8 +391,10 @@ bare_os_network_interfaces(js_env_t *env, js_callback_info_t *info) {
   }
 
   js_value_t *result;
-  err = js_create_array_with_length(env, len, &result);
+  err = js_create_array(env, &result);
   assert(err == 0);
+
+  uint32_t j = 0;
 
   for (size_t i = 0, n = len; i < n; i++) {
     uv_interface_address_t address = addresses[i];
@@ -414,8 +443,8 @@ bare_os_network_interfaces(js_env_t *env, js_callback_info_t *info) {
 
       strcpy(family_string, "IPv6");
 
-      for (size_t i = 0; i < 16; i++) {
-        uint32_t count = bare_os__population_count(address.netmask.netmask6.sin6_addr.s6_addr[i]);
+      for (size_t k = 0; k < 16; k++) {
+        uint32_t count = bare_os__population_count(address.netmask.netmask6.sin6_addr.s6_addr[k]);
 
         if (count == 0) break;
 
@@ -441,7 +470,7 @@ bare_os_network_interfaces(js_env_t *env, js_callback_info_t *info) {
     err = js_set_named_property(env, item, "family", val);
     assert(err == 0);
 
-    err = snprintf(cidr, sizeof(cidr), "%s/%d", address_ip, cidr_value);
+    err = snprintf(cidr, sizeof(cidr), "%s/%u", address_ip, cidr_value);
     assert(err > 0);
 
     err = js_create_string_utf8(env, (utf8_t *) cidr, -1, &val);
@@ -484,7 +513,7 @@ bare_os_network_interfaces(js_env_t *env, js_callback_info_t *info) {
       assert(err == 0);
     }
 
-    err = js_set_element(env, result, i, item);
+    err = js_set_element(env, result, j++, item);
     assert(err == 0);
   }
 
@@ -505,12 +534,12 @@ bare_os_kill(js_env_t *env, js_callback_info_t *info) {
 
   assert(argc == 2);
 
-  uint32_t pid;
-  err = js_get_value_uint32(env, argv[0], &pid);
+  int32_t pid;
+  err = js_get_value_int32(env, argv[0], &pid);
   assert(err == 0);
 
-  uint32_t signum;
-  err = js_get_value_uint32(env, argv[1], &signum);
+  int32_t signum;
+  err = js_get_value_int32(env, argv[1], &signum);
   assert(err == 0);
 
   err = uv_kill(pid, signum);
@@ -541,7 +570,12 @@ bare_os_cpu_usage(js_env_t *env, js_callback_info_t *info) {
 
   uv_rusage_t usage;
   err = uv_getrusage(&usage);
-  assert(err == 0);
+  if (err < 0) {
+    err = js_throw_error(env, uv_err_name(err), uv_strerror(err));
+    assert(err == 0);
+
+    return NULL;
+  }
 
   js_value_t *result;
   err = js_create_object(env, &result);
@@ -572,7 +606,12 @@ bare_os_cpu_usage_thread(js_env_t *env, js_callback_info_t *info) {
 
   uv_rusage_t usage;
   err = uv_getrusage_thread(&usage);
-  assert(err == 0);
+  if (err < 0) {
+    err = js_throw_error(env, uv_err_name(err), uv_strerror(err));
+    assert(err == 0);
+
+    return NULL;
+  }
 
   js_value_t *result;
   err = js_create_object(env, &result);
@@ -603,7 +642,12 @@ bare_os_resource_usage(js_env_t *env, js_callback_info_t *info) {
 
   uv_rusage_t usage;
   err = uv_getrusage(&usage);
-  assert(err == 0);
+  if (err < 0) {
+    err = js_throw_error(env, uv_err_name(err), uv_strerror(err));
+    assert(err == 0);
+
+    return NULL;
+  }
 
   js_value_t *result;
   err = js_create_object(env, &result);
@@ -672,12 +716,17 @@ bare_os_memory_usage(js_env_t *env, js_callback_info_t *info) {
   err = js_get_heap_statistics(env, &stats);
   assert(err == 0);
 
-  js_value_t *result;
-  err = js_create_object(env, &result);
-  assert(err == 0);
-
   size_t rss;
   err = uv_resident_set_memory(&rss);
+  if (err < 0) {
+    err = js_throw_error(env, uv_err_name(err), uv_strerror(err));
+    assert(err == 0);
+
+    return NULL;
+  }
+
+  js_value_t *result;
+  err = js_create_object(env, &result);
   assert(err == 0);
 
   js_value_t *value;
@@ -757,7 +806,12 @@ bare_os_uptime(js_env_t *env, js_callback_info_t *info) {
 
   double uptime;
   err = uv_uptime(&uptime);
-  assert(err == 0);
+  if (err < 0) {
+    err = js_throw_error(env, uv_err_name(err), uv_strerror(err));
+    assert(err == 0);
+
+    return NULL;
+  }
 
   js_value_t *result;
   err = js_create_double(env, uptime, &result);
@@ -857,9 +911,18 @@ static js_value_t *
 bare_os_get_process_title(js_env_t *env, js_callback_info_t *info) {
   int err;
 
-  char title[256];
-  err = uv_get_process_title(title, 256);
+  size_t len = 256;
+  char *title = NULL;
+
+  do {
+    len *= 2;
+    title = realloc(title, len);
+    err = uv_get_process_title(title, len);
+  } while (err == UV_ENOBUFS);
+
   if (err < 0) {
+    free(title);
+
     err = js_throw_error(env, uv_err_name(err), uv_strerror(err));
     assert(err == 0);
 
@@ -869,6 +932,8 @@ bare_os_get_process_title(js_env_t *env, js_callback_info_t *info) {
   js_value_t *result;
   err = js_create_string_utf8(env, (utf8_t *) title, -1, &result);
   assert(err == 0);
+
+  free(title);
 
   return result;
 }
@@ -885,12 +950,18 @@ bare_os_set_process_title(js_env_t *env, js_callback_info_t *info) {
 
   assert(argc == 1);
 
-  utf8_t data[256];
-  err = js_get_value_string_utf8(env, argv[0], data, 256, NULL);
-  assert(err == 0);
+  utf8_t *title = bare_os__get_string(env, argv[0]);
 
-  err = uv_set_process_title((char *) data);
-  assert(err == 0);
+  err = uv_set_process_title((char *) title);
+
+  free(title);
+
+  if (err < 0) {
+    err = js_throw_error(env, uv_err_name(err), uv_strerror(err));
+    assert(err == 0);
+
+    return NULL;
+  }
 
   return NULL;
 }
@@ -974,15 +1045,15 @@ bare_os_group_info(js_env_t *env, js_callback_info_t *info) {
   err = js_is_undefined(env, argv[0], &gid_undefined);
   assert(err == 0);
 
-  int32_t gid;
+  uint32_t gid;
   if (gid_undefined) {
 #if defined(BARE_PLATFORM_WIN32)
-    gid = -1;
+    gid = (uint32_t) -1;
 #else
     gid = getegid();
 #endif
   } else {
-    err = js_get_value_int32(env, argv[0], &gid);
+    err = js_get_value_uint32(env, argv[0], &gid);
     assert(err == 0);
   }
 
@@ -1016,7 +1087,7 @@ bare_os_group_info(js_env_t *env, js_callback_info_t *info) {
   assert(err == 0);
 
   js_value_t *grp_gid;
-  err = js_create_int32(env, group.gid, &grp_gid);
+  err = js_create_uint32(env, group.gid, &grp_gid);
   assert(err == 0);
 
   err = js_set_named_property(env, result, "gid", grp_gid);
@@ -1095,52 +1166,37 @@ bare_os_get_env(js_env_t *env, js_callback_info_t *info) {
 
   assert(argc == 1);
 
-  size_t name_len;
-  err = js_get_value_string_utf8(env, argv[0], NULL, 0, &name_len);
-  assert(err == 0);
+  utf8_t *name = bare_os__get_string(env, argv[0]);
 
-  name_len += 1 /* NULL */;
-
-  utf8_t *name = malloc(name_len);
-  err = js_get_value_string_utf8(env, argv[0], name, name_len, &name_len);
-  assert(err == 0);
+  size_t value_len = 256;
+  char *value = NULL;
 
   uv_rwlock_rdlock(&bare_os_env_lock);
 
-  size_t value_len = 256;
-  char *value = malloc(value_len);
-  err = uv_os_getenv((char *) name, value, &value_len);
+  do {
+    value = realloc(value, value_len);
+    err = uv_os_getenv((char *) name, value, &value_len);
+  } while (err == UV_ENOBUFS);
+
+  uv_rwlock_rdunlock(&bare_os_env_lock);
+
+  free(name);
 
   js_value_t *result;
 
   if (err == UV_ENOENT) {
     err = js_get_undefined(env, &result);
     assert(err == 0);
+  } else if (err < 0) {
+    err = js_throw_error(env, uv_err_name(err), uv_strerror(err));
+    assert(err == 0);
+
+    result = NULL;
   } else {
-    if (err == UV_ENOBUFS) {
-      value = realloc(value, value_len);
-
-      err = uv_os_getenv((char *) name, value, &value_len);
-      assert(err == 0);
-    } else if (err < 0) {
-      uv_rwlock_rdunlock(&bare_os_env_lock);
-
-      err = js_throw_error(env, uv_err_name(err), uv_strerror(err));
-      assert(err == 0);
-
-      free(name);
-      free(value);
-
-      return NULL;
-    }
-
     err = js_create_string_utf8(env, (utf8_t *) value, value_len, &result);
     assert(err == 0);
   }
 
-  uv_rwlock_rdunlock(&bare_os_env_lock);
-
-  free(name);
   free(value);
 
   return result;
@@ -1158,13 +1214,7 @@ bare_os_has_env(js_env_t *env, js_callback_info_t *info) {
 
   assert(argc == 1);
 
-  size_t name_len;
-  err = js_get_value_string_utf8(env, argv[0], NULL, 0, &name_len);
-  assert(err == 0);
-
-  utf8_t *name = malloc(++name_len);
-  err = js_get_value_string_utf8(env, argv[0], name, name_len, &name_len);
-  assert(err == 0);
+  utf8_t *name = bare_os__get_string(env, argv[0]);
 
   uv_rwlock_rdlock(&bare_os_env_lock);
 
@@ -1203,21 +1253,9 @@ bare_os_set_env(js_env_t *env, js_callback_info_t *info) {
 
   assert(argc == 2);
 
-  size_t name_len;
-  err = js_get_value_string_utf8(env, argv[0], NULL, 0, &name_len);
-  assert(err == 0);
+  utf8_t *name = bare_os__get_string(env, argv[0]);
 
-  utf8_t *name = malloc(++name_len);
-  err = js_get_value_string_utf8(env, argv[0], name, name_len, &name_len);
-  assert(err == 0);
-
-  size_t value_len;
-  err = js_get_value_string_utf8(env, argv[1], NULL, 0, &value_len);
-  assert(err == 0);
-
-  utf8_t *value = malloc(++value_len);
-  err = js_get_value_string_utf8(env, argv[1], value, value_len, &value_len);
-  assert(err == 0);
+  utf8_t *value = bare_os__get_string(env, argv[1]);
 
   uv_rwlock_wrlock(&bare_os_env_lock);
 
@@ -1252,13 +1290,7 @@ bare_os_unset_env(js_env_t *env, js_callback_info_t *info) {
 
   assert(argc == 1);
 
-  size_t name_len;
-  err = js_get_value_string_utf8(env, argv[0], NULL, 0, &name_len);
-  assert(err == 0);
-
-  utf8_t *name = malloc(++name_len);
-  err = js_get_value_string_utf8(env, argv[0], name, name_len, &name_len);
-  assert(err == 0);
+  utf8_t *name = bare_os__get_string(env, argv[0]);
 
   uv_rwlock_wrlock(&bare_os_env_lock);
 
